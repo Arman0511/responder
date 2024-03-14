@@ -14,11 +14,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Request location permission if not granted
-  final locationPermission = await Permission.locationWhenInUse.status;
-  if (locationPermission.isDenied) {
-    await Permission.locationWhenInUse.request();
-  }
-
+  // final locationPermission = await Permission.locationWhenInUse.status;
+  // if (locationPermission.isDenied) {
+  //   await Permission.locationWhenInUse.request();
+  // }
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,

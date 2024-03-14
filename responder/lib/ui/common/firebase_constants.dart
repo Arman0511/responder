@@ -1,5 +1,5 @@
 class FirebaseConstants {
-  static const userCollection = 'users';
+  static const userCollection = 'responder';
   static const name = 'name';
   static const id = 'id';
 

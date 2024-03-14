@@ -67,16 +67,17 @@ class AuthenticationService {
         return left(AppException(AppExceptionConstants.userNotFound));
       }
 
-      User user = User(
+      User responder = User(
         name: name,
         email: email,
+        phonenumber: phoneNum,
         uid: credential.user!.uid,
       );
 
       await db
           .collection(FirebaseConstants.userCollection)
           .doc(credential.user?.uid)
-          .set(user.toJson());
+          .set(responder.toJson());
 
       return right(const None());
     } on FirebaseAuthException catch (e) {
