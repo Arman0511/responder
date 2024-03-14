@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_first_app/app/app.bottomsheets.dart';
-import 'package:my_first_app/app/app.router.dart';
-import 'package:my_first_app/services/authentication_service.dart';
-import 'package:my_first_app/services/shared_pref_service.dart';
-import 'package:my_first_app/ui/common/input_validation.dart';
+import 'package:responder/app/app.bottomsheets.dart';
+import 'package:responder/app/app.router.dart';
+import 'package:responder/services/authentication_service.dart';
+import 'package:responder/services/shared_pref_service.dart';
+import 'package:responder/ui/common/input_validation.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 

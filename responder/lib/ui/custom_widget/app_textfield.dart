@@ -1,6 +1,6 @@
-import 'package:my_first_app/ui/constants/app_color.dart';
+import 'package:responder/ui/constants/app_color.dart';
 import 'package:flutter/material.dart';
-import 'package:my_first_app/ui/common/ui_helpers.dart';
+import 'package:responder/ui/common/ui_helpers.dart';
 
 class AppTextField extends StatelessWidget {
   const AppTextField(

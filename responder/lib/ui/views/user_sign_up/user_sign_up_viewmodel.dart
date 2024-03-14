@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_first_app/app/app.router.dart';
-import 'package:my_first_app/methods/common_methods.dart';
+import 'package:responder/app/app.router.dart';
+import 'package:responder/methods/common_methods.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 

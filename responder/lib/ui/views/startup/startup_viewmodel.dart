@@ -1,8 +1,8 @@
-import 'package:my_first_app/services/authentication_service.dart';
-import 'package:my_first_app/services/shared_pref_service.dart';
+import 'package:responder/services/authentication_service.dart';
+import 'package:responder/services/shared_pref_service.dart';
 import 'package:stacked/stacked.dart';
-import 'package:my_first_app/app/app.locator.dart';
-import 'package:my_first_app/app/app.router.dart';
+import 'package:responder/app/app.locator.dart';
+import 'package:responder/app/app.router.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 class StartupViewModel extends BaseViewModel {

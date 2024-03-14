@@ -1,24 +1,24 @@
-import 'package:my_first_app/ui/bottom_sheets/notice/notice_sheet.dart';
-import 'package:my_first_app/ui/dialogs/info_alert/info_alert_dialog.dart';
-import 'package:my_first_app/ui/views/home/home_view.dart';
-import 'package:my_first_app/ui/views/startup/startup_view.dart';
+import 'package:responder/ui/bottom_sheets/notice/notice_sheet.dart';
+import 'package:responder/ui/dialogs/info_alert/info_alert_dialog.dart';
+import 'package:responder/ui/views/home/home_view.dart';
+import 'package:responder/ui/views/startup/startup_view.dart';
 import 'package:stacked/stacked_annotations.dart';
 import 'package:stacked_services/stacked_services.dart';
-import 'package:my_first_app/ui/views/login/login_view.dart';
-import 'package:my_first_app/ui/views/responder_homepage/responder_homepage_view.dart';
+import 'package:responder/ui/views/login/login_view.dart';
+import 'package:responder/ui/views/responder_homepage/responder_homepage_view.dart';
 
 import '../services/authentication_service.dart';
 import '../services/shared_pref_service.dart';
-import 'package:my_first_app/ui/views/user_sign_up/user_sign_up_view.dart';
-import 'package:my_first_app/ui/views/message_view/message_view_view.dart';
-import 'package:my_first_app/ui/views/forgot_password_view/forgot_password_view_view.dart';
-import 'package:my_first_app/ui/views/profile_view/profile_view_view.dart';
+import 'package:responder/ui/views/user_sign_up/user_sign_up_view.dart';
+import 'package:responder/ui/views/message_view/message_view_view.dart';
+import 'package:responder/ui/views/forgot_password_view/forgot_password_view_view.dart';
+import 'package:responder/ui/views/profile_view/profile_view_view.dart';
 
-import 'package:my_first_app/ui/dialogs/update_profile_image/update_profile_image_dialog.dart';
-import 'package:my_first_app/ui/dialogs/update_name/update_name_dialog.dart';
-import 'package:my_first_app/ui/dialogs/update_email/update_email_dialog.dart';
-import 'package:my_first_app/ui/dialogs/update_password/update_password_dialog.dart';
-import 'package:my_first_app/ui/bottom_sheets/input_validation/input_validation_sheet.dart';
+import 'package:responder/ui/dialogs/update_profile_image/update_profile_image_dialog.dart';
+import 'package:responder/ui/dialogs/update_name/update_name_dialog.dart';
+import 'package:responder/ui/dialogs/update_email/update_email_dialog.dart';
+import 'package:responder/ui/dialogs/update_password/update_password_dialog.dart';
+import 'package:responder/ui/bottom_sheets/input_validation/input_validation_sheet.dart';
 // @stacked-import
 
 @StackedApp(

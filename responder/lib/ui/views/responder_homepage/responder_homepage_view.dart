@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:my_first_app/global/global_var.dart';
-import 'package:my_first_app/ui/common/app_constants.dart';
-import 'package:my_first_app/ui/common/ui_helpers.dart';
-import 'package:my_first_app/ui/custom_widget/app_body.dart';
-import 'package:my_first_app/ui/custom_widget/app_button.dart';
-import 'package:my_first_app/ui/custom_widget/user_profile.dart';
+import 'package:responder/global/global_var.dart';
+import 'package:responder/ui/common/app_constants.dart';
+import 'package:responder/ui/common/ui_helpers.dart';
+import 'package:responder/ui/custom_widget/app_body.dart';
+import 'package:responder/ui/custom_widget/app_button.dart';
+import 'package:responder/ui/custom_widget/user_profile.dart';
 import 'package:stacked/stacked.dart';
 
 import 'responder_homepage_viewmodel.dart';

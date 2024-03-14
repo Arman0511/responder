@@ -2,8 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_first_app/app/app.locator.dart';
-import 'package:my_first_app/app/app.router.dart';
+import 'package:responder/app/app.locator.dart';
+import 'package:responder/app/app.router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:relative_time/relative_time.dart';
 import 'package:stacked_services/stacked_services.dart';
@@ -14,10 +14,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Request location permission if not granted
-  // final locationPermission = await Permission.locationWhenInUse.status;
-  // if (locationPermission.isDenied) {
-  //   await Permission.locationWhenInUse.request();
-  // }
+  final locationPermission = await Permission.locationWhenInUse.status;
+  if (locationPermission.isDenied) {
+    await Permission.locationWhenInUse.request();
+  }
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,

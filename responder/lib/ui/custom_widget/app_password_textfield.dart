@@ -1,4 +1,4 @@
-import 'package:my_first_app/ui/common/ui_helpers.dart';
+import 'package:responder/ui/common/ui_helpers.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_color.dart';

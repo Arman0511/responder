@@ -1,17 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:my_first_app/app/app.dart';
-import 'package:my_first_app/ui/common/ui_helpers.dart';
-import 'package:my_first_app/ui/constants/app_color.dart';
-import 'package:my_first_app/ui/constants/app_png.dart';
-import 'package:my_first_app/ui/custom_widget/app2_button.dart';
-import 'package:my_first_app/ui/custom_widget/app_body.dart';
-import 'package:my_first_app/ui/custom_widget/app_button.dart';
-import 'package:my_first_app/ui/custom_widget/app_icon_button.dart';
-import 'package:my_first_app/ui/custom_widget/app_loading.dart';
-import 'package:my_first_app/ui/custom_widget/app_textbutton.dart';
-import 'package:my_first_app/ui/custom_widget/edit_profile_card.dart';
+import 'package:responder/app/app.dart';
+import 'package:responder/ui/common/ui_helpers.dart';
+import 'package:responder/ui/constants/app_color.dart';
+import 'package:responder/ui/constants/app_png.dart';
+import 'package:responder/ui/custom_widget/app2_button.dart';
+import 'package:responder/ui/custom_widget/app_body.dart';
+import 'package:responder/ui/custom_widget/app_button.dart';
+import 'package:responder/ui/custom_widget/app_icon_button.dart';
+import 'package:responder/ui/custom_widget/app_loading.dart';
+import 'package:responder/ui/custom_widget/app_textbutton.dart';
+import 'package:responder/ui/custom_widget/edit_profile_card.dart';
 import 'package:stacked/stacked.dart';
 
 import 'profile_view_viewmodel.dart';

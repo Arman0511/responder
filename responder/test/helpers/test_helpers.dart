@@ -1,6 +1,6 @@
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:my_first_app/app/app.locator.dart';
+import 'package:responder/app/app.locator.dart';
 import 'package:stacked_services/stacked_services.dart';
 // @stacked-import
 

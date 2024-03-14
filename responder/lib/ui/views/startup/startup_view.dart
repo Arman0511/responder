@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_first_app/ui/constants/app_png.dart';
-import 'package:my_first_app/ui/custom_widget/app_image.dart';
+import 'package:responder/ui/constants/app_png.dart';
+import 'package:responder/ui/custom_widget/app_image.dart';
 import 'package:stacked/stacked.dart';
-import 'package:my_first_app/ui/common/ui_helpers.dart';
+import 'package:responder/ui/common/ui_helpers.dart';
 
 import '../../../resources/png_images.dart';
 import 'startup_viewmodel.dart';

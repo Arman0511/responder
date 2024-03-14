@@ -1,5 +1,5 @@
-import 'package:my_first_app/ui/constants/app_color.dart';
-import 'package:my_first_app/ui/constants/app_png.dart';
+import 'package:responder/ui/constants/app_color.dart';
+import 'package:responder/ui/constants/app_png.dart';
 import 'package:flutter/material.dart';
 
 class UserProfile extends StatelessWidget {

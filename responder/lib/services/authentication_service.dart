@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:firebase_auth/firebase_auth.dart'  hide User;
-import 'package:my_first_app/app/app.locator.dart';
-import 'package:my_first_app/services/shared_pref_service.dart';
-import 'package:my_first_app/ui/common/app_exception_constants.dart';
-import 'package:my_first_app/ui/common/firebase_constants.dart';
+import 'package:responder/app/app.locator.dart';
+import 'package:responder/services/shared_pref_service.dart';
+import 'package:responder/ui/common/app_exception_constants.dart';
+import 'package:responder/ui/common/firebase_constants.dart';
 import '../exception/app_exception.dart';
 import '../model/user.dart';
 
@@ -36,7 +36,7 @@ class AuthenticationService {
         return Left(AppException("User not found"));
       }
       final userId = credential.user!.uid;
-      final snap = await db.collection("users").doc(userId).get();
+      final snap = await db.collection("responder").doc(userId).get();
       final user = User.fromJson(snap.data()!);
       return Right(user);
     } on FirebaseAuthException catch (e) {

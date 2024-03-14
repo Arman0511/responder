@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:my_first_app/ui/constants/app_png.dart';
-import 'package:my_first_app/ui/custom_widget/app2_button.dart';
-import 'package:my_first_app/ui/custom_widget/app_body.dart';
-import 'package:my_first_app/ui/custom_widget/app_button.dart';
-import 'package:my_first_app/ui/custom_widget/app_image.dart';
-import 'package:my_first_app/ui/custom_widget/app_password_textfield.dart';
-import 'package:my_first_app/ui/custom_widget/app_textbutton.dart';
-import 'package:my_first_app/ui/custom_widget/app_textfield.dart';
-import 'package:my_first_app/ui/custom_widget/app_title_text.dart';
+import 'package:responder/ui/constants/app_png.dart';
+import 'package:responder/ui/custom_widget/app2_button.dart';
+import 'package:responder/ui/custom_widget/app_body.dart';
+import 'package:responder/ui/custom_widget/app_button.dart';
+import 'package:responder/ui/custom_widget/app_image.dart';
+import 'package:responder/ui/custom_widget/app_password_textfield.dart';
+import 'package:responder/ui/custom_widget/app_textbutton.dart';
+import 'package:responder/ui/custom_widget/app_textfield.dart';
+import 'package:responder/ui/custom_widget/app_title_text.dart';
 import 'package:stacked/stacked.dart';
 
 import '../../common/app_constants.dart';
