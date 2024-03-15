@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -49,20 +50,51 @@ class HomeViewModel extends BaseViewModel {
     setBusy(false);
   }
 
-  getCurrentLiveLocationOfUser() async {
-    Position positionOfUser = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.bestForNavigation);
-    currentPositionOfUser = positionOfUser;
+Future<void> storeCurrentLocationOfUser() async {
+  setBusy(true);
 
-    LatLng positionOfUserInLatLang = LatLng(
-        currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
-    CameraPosition cameraPosition =
-        CameraPosition(target: positionOfUserInLatLang, zoom: 15);
-    controllerGoogleMap!
-        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-    rebuildUi();
-    print("Created Map");
-  }
+  // Get current position of the user
+  Position positionOfUser = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.bestForNavigation);
+  currentPositionOfUser = positionOfUser;
+
+  // Convert current position to LatLng
+  LatLng positionOfUserInLatLang = LatLng(
+      currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
+
+  // Get current date and time
+  DateTime currentDateTime = DateTime.now();
+
+  // Store the location data in Firestore along with date and time
+  await FirebaseFirestore.instance.collection('responder').doc(user.uid).update({
+    'location': GeoPoint(positionOfUser.latitude, positionOfUser.longitude),
+    'timestamp': Timestamp.fromDate(currentDateTime),
+  });
+
+  // Animate camera to user's current position
+  CameraPosition cameraPosition =
+      CameraPosition(target: positionOfUserInLatLang, zoom: 15);
+  controllerGoogleMap!
+      .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+
+  setBusy(false);
+}
+
+
+  // getCurrentLiveLocationOfUser() async {
+  //   Position positionOfUser = await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.bestForNavigation);
+  //   currentPositionOfUser = positionOfUser;
+
+  //   LatLng positionOfUserInLatLang = LatLng(
+  //       currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
+  //   CameraPosition cameraPosition =
+  //       CameraPosition(target: positionOfUserInLatLang, zoom: 15);
+  //   controllerGoogleMap!
+  //       .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+  //   rebuildUi();
+  //   print("Created Map");
+  // }
 
   void initState() {
     notificationService.requestNotificationPermission();
@@ -88,7 +120,7 @@ class HomeViewModel extends BaseViewModel {
     controllerGoogleMap = mapController;
     googleMapCompleterController.complete(controllerGoogleMap);
     updateMapTheme(controllerGoogleMap!);
-    getCurrentLiveLocationOfUser();
+    storeCurrentLocationOfUser();
   }
 
   void goToProfileView() {
@@ -99,7 +131,7 @@ class HomeViewModel extends BaseViewModel {
     currentPageIndex = index;
     rebuildUi();
     if (index == 1) {
-      getCurrentLiveLocationOfUser();
+      storeCurrentLocationOfUser();
       if (controllerGoogleMap != null) {
         updateMapTheme(controllerGoogleMap!);
       }
