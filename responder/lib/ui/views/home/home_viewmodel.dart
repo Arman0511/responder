@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'hide User;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -29,6 +31,8 @@ class HomeViewModel extends BaseViewModel {
   // final LocalNotifications _localNotifications = LocalNotifications();
   final _navigationService = locator<NavigationService>();
   int currentPageIndex = 0;
+  double? userLatitude;
+  double? userLongitude;
 
   bool btnMedSelected = false;
   bool btnFireSelected = false;
@@ -49,6 +53,35 @@ class HomeViewModel extends BaseViewModel {
     });
     setBusy(false);
   }
+
+ void _showUserLocation() async {
+  try {
+    // Get the user's location data from Firestore
+    DocumentSnapshot<Map<String, dynamic>>? userLocationSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .get();
+
+    if (userLocationSnapshot.exists) {
+      // Extract the location data as Map<String, dynamic>
+      Map<String, dynamic> locationData = userLocationSnapshot!.data()!;
+
+      // Extract the latitude and longitude from the location data
+      userLatitude = locationData['location']['latitude'];
+      userLongitude = locationData['location']['longitude'];
+
+      // Create a Google Map widget and set the initial camera position to the user's location
+      // Code for creating Google Map widget and setting initial camera position should be added here
+    } else {
+      print('User location data not found.');
+    }
+  } catch (error) {
+    print('Error fetching user location: $error');
+    // Handle error appropriately
+  }
+}
+
+
 
 Future<void> storeCurrentLocationOfUser() async {
   setBusy(true);
@@ -121,6 +154,8 @@ Future<void> storeCurrentLocationOfUser() async {
     googleMapCompleterController.complete(controllerGoogleMap);
     updateMapTheme(controllerGoogleMap!);
     storeCurrentLocationOfUser();
+    // _showUserLocation();
+    
   }
 
   void goToProfileView() {
@@ -128,15 +163,16 @@ Future<void> storeCurrentLocationOfUser() async {
   }
 
   void onPageChanged(int index) {
-    currentPageIndex = index;
-    rebuildUi();
-    if (index == 1) {
-      storeCurrentLocationOfUser();
-      if (controllerGoogleMap != null) {
-        updateMapTheme(controllerGoogleMap!);
-      }
+  currentPageIndex = index;
+  rebuildUi();
+  if (index == 1) {
+    storeCurrentLocationOfUser();
+    if (controllerGoogleMap != null) {
+      updateMapTheme(controllerGoogleMap!);
     }
-  }
+  } 
+}
+
 
   void onDestinationSelected(int index) {
     currentPageIndex = index;
@@ -151,38 +187,10 @@ Future<void> storeCurrentLocationOfUser() async {
     );
   }
 
-  Future<void> helpPressed() async {
-    if (btnFireSelected == false &&
-        btnMedSelected == false &&
-        btnPoliceSelected == false) {
-      _snackbarService.showSnackbar(
-          message: "Select Emergency Concern!",
-          duration: const Duration(seconds: 1));
-      return;
-    }
+ 
 
-    _snackbarService.showSnackbar(
-        message: "Rescue Coming!!", duration: const Duration(seconds: 2));
-    btnMedSelected = false;
-    btnFireSelected = false;
-    btnPoliceSelected = false;
-    rebuildUi();
-  }
 
-  void medPressed() {
-    btnMedSelected = !btnMedSelected;
-    rebuildUi();
-  }
 
-  void firePressed() {
-    btnFireSelected = !btnFireSelected;
-    rebuildUi();
-  }
-
-  void policePressed() {
-    btnPoliceSelected = !btnPoliceSelected;
-    rebuildUi();
-  }
 
   void incrementCounter() {}
 

@@ -509,6 +509,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
+  geoflutterfire2:
+    dependency: "direct main"
+    description:
+      name: geoflutterfire2
+      sha256: "343a3ef87f81f39e64a2b82ee392efa93fa646475564853daca565afc38096bb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.15"
+  geoflutterfire_plus:
+    dependency: "direct main"
+    description:
+      name: geoflutterfire_plus
+      sha256: d0dd09aa3da8805ead95b511e5b554e6ca12b5eef3960e171f9bd477030894e4
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.20"
   geolocator:
     dependency: "direct main"
     description:

@@ -51,70 +51,11 @@ class HomeView extends StackedView<HomeViewModel> {
             child: PageView(
               controller: viewModel.pageController,
               onPageChanged: viewModel.onPageChanged,
+              physics: NeverScrollableScrollPhysics(), 
               children: [
                 SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: 30),
-                        width: 300,
-                        height: 600,
-                        child: Column(
-                          children: <Widget>[
-                            Material(
-                              shape: const CircleBorder(),
-                              elevation:
-                                  4.0, // Adjust the elevation for a shadow effect
-                              color: Colors
-                                  .red, // You can change the color to match your design
-                              child: InkWell(
-                                onTap: viewModel.helpPressed,
-                                child: Container(
-                                  width: 200.0,
-                                  height: 200.0,
-                                  alignment: Alignment.center,
-                                  child: const Text(
-                                    AppConstants.helpText,
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              child: App2Button(
-                                text: AppConstants.medText,
-                                onClick: viewModel.medPressed,
-                                isSelected: viewModel.btnMedSelected,
-                                
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              child: App2Button(
-                                text: AppConstants.fireText,
-                                onClick: viewModel.firePressed,
-                                isSelected: viewModel.btnFireSelected,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              child: App2Button(
-                                text: AppConstants.policeText,
-                                onClick: viewModel.policePressed,
-                                isSelected: viewModel.btnPoliceSelected,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Container(
+                  child: Column(children: [
+                      SizedBox(
                         height: 400, // Set a specific height for the GoogleMap
                         child: GoogleMap(
                           mapType: MapType.normal,
@@ -123,7 +64,11 @@ class HomeView extends StackedView<HomeViewModel> {
                           onMapCreated: viewModel.mapCreated,
                         ),
                       ),
-                    ],
+                    ],),
+                ),
+                SingleChildScrollView(
+                  child: Column(
+                    
                   ),
                 ),
 
