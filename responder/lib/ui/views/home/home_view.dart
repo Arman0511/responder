@@ -20,6 +20,8 @@ class HomeView extends StackedView<HomeViewModel> {
     HomeViewModel viewModel,
     Widget? child,
   ) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return AppBody(
       body: Column(
         children: [
@@ -45,33 +47,80 @@ class HomeView extends StackedView<HomeViewModel> {
             ),
           ),
           SizedBox(
-            height: 16,
+            height: screenHeight * 0.03, // Set height to 3% of screen height
           ),
           Expanded(
             child: PageView(
               controller: viewModel.pageController,
               onPageChanged: viewModel.onPageChanged,
-              physics: NeverScrollableScrollPhysics(), 
+              physics: NeverScrollableScrollPhysics(),
               children: [
                 SingleChildScrollView(
                   child: Column(children: [
-                      SizedBox(
-                        height: 400, // Set a specific height for the GoogleMap
-                        child: GoogleMap(
-                          mapType: MapType.normal,
-                          myLocationEnabled: true,
-                          initialCameraPosition: googlePlexInitialPosition,
-                          onMapCreated: viewModel.mapCreated,
-                        ),
+                    SizedBox(
+                      height: screenHeight *
+                          0.3, // Set height to 30% of screen height
+                      child: GoogleMap(
+                        mapType: MapType.normal,
+                        myLocationEnabled: true,
+                        initialCameraPosition: googlePlexInitialPosition,
+                        onMapCreated: viewModel.mapCreated,
                       ),
-                    ],),
+                    ),
+                  ]),
                 ),
                 SingleChildScrollView(
                   child: Column(
-                    
+                    children: [
+                      ...List.generate(
+                        10,
+                        (index) => ElevatedButton(
+                          onPressed: () {
+                            viewModel.showDialogBox(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.black,
+                            backgroundColor: index % 2 == 0 ? Colors.grey.shade200 : Colors.white,
+                            padding: EdgeInsets.all(16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Hi, how are you doing?',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      '(12:01 PM)',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.grey.shade600,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-
+                )
               ],
             ),
           ),
@@ -139,7 +188,7 @@ class HomeView extends StackedView<HomeViewModel> {
   HomeViewModel viewModelBuilder(
     BuildContext context,
   ) =>
-      HomeViewModel();
+      HomeViewModel(context);
 
   @override
   void onViewModelReady(HomeViewModel viewModel) {

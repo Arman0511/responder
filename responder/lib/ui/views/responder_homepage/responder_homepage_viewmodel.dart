@@ -8,7 +8,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:responder/app/app.locator.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:stacked/stacked.dart';
-import 'package:responder/notification_service.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 class ResponderHomepageViewModel extends BaseViewModel {

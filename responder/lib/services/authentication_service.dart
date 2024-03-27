@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
-import 'package:firebase_auth/firebase_auth.dart'  hide User;
+import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:responder/app/app.locator.dart';
 import 'package:responder/services/shared_pref_service.dart';
 import 'package:responder/ui/common/app_exception_constants.dart';
@@ -13,10 +13,9 @@ class AuthenticationService {
   final db = FirebaseFirestore.instance;
   final _sharedPref = locator<SharedPreferenceService>();
 
- bool get isLoggedIn => auth.currentUser != null;
+  bool get isLoggedIn => auth.currentUser != null;
 
-
-  Future<Either<AppException, None>> logout() async{
+  Future<Either<AppException, None>> logout() async {
     try {
       await auth.signOut();
       await _sharedPref.deleteCurrentUser();
@@ -25,7 +24,6 @@ class AuthenticationService {
       return Left(AppException(e.toString()));
     }
   }
-
 
   Future<Either<AppException, User>> login(
       {required String email, required String password}) async {
@@ -52,8 +50,6 @@ class AuthenticationService {
       return Left(AppException(e.toString()));
     }
   }
-
-
 
   Future<Either<AppException, None>> signup(
       String name, String email, String password, String phoneNum) async {

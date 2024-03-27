@@ -21,26 +21,30 @@ class LoginViewModel extends BaseViewModel with InputValidation {
   TextEditingController passwordController = TextEditingController();
 
   Future<void> logIn() async {
-  if (validateInput()) {
-    setBusy(true);
-    final response = await _authenticationService.login(
-        email: emailController.text, password: passwordController.text);
-    setBusy(false);
-    response.fold((l) {
-      showBottomSheet(l.message);
-    }, (user) async {
-      await _sharedPref.saveUser(user);
-      // Generate FCM token
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      // Update Firestore document with the FCM token and status
-      await FirebaseFirestore.instance.collection('responder').doc(user.uid).update({
-        'fcmToken': fcmToken,
-        'status': 'online',
+    if (validateInput()) {
+      setBusy(true);
+      final response = await _authenticationService.login(
+          email: emailController.text, password: passwordController.text);
+      setBusy(false);
+      response.fold((l) {
+        showBottomSheet(l.message);
+      }, (user) async {
+        await _sharedPref.saveUser(user);
+        // Generate FCM token
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        // Update Firestore document with the FCM token and status
+        await FirebaseFirestore.instance
+            .collection('responder')
+            .doc(user.uid)
+            .update({
+          'fcmToken': fcmToken,
+          'status': 'online',
+        });
+        _navigationService.replaceWithHomeView();
       });
-      _navigationService.replaceWithHomeView();
-    });
+    }
   }
-}
+
   bool validateInput() {
     String? emailValidation = isValidEmail(emailController.text);
     String? passwordValidation = isValidPassword(passwordController.text);
@@ -57,6 +61,7 @@ class LoginViewModel extends BaseViewModel with InputValidation {
       return false;
     }
   }
+
   void showBottomSheet(String description) {
     _bottomSheetService.showCustomSheet(
       variant: BottomSheetType.inputValidation,
@@ -72,5 +77,4 @@ class LoginViewModel extends BaseViewModel with InputValidation {
   void goToForgotPassword() {
     _navigationService.navigateToForgotPasswordViewView();
   }
-  
 }

@@ -8,7 +8,7 @@ import 'package:responder/ui/views/home/home_viewmodel.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
-  HomeViewModel getModel() => HomeViewModel();
+  HomeViewModel getModel() => HomeViewModel(null);
 
   group('HomeViewmodelTest -', () {
     setUp(() => registerServices());

@@ -2,6 +2,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:responder/app/app.locator.dart';
 import 'package:stacked_services/stacked_services.dart';
+import 'package:responder/services/firebase_messaging_sevice_service.dart';
+import 'package:responder/services/notification_service.dart';
 // @stacked-import
 
 import 'test_helpers.mocks.dart';
@@ -10,13 +12,18 @@ import 'test_helpers.mocks.dart';
   MockSpec<NavigationService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<BottomSheetService>(onMissingStub: OnMissingStub.returnDefault),
   MockSpec<DialogService>(onMissingStub: OnMissingStub.returnDefault),
-  // @stacked-mock-spec
+  MockSpec<FirebaseMessagingSeviceService>(
+      onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<NotificationService>(onMissingStub: OnMissingStub.returnDefault),
+// @stacked-mock-spec
 ])
 void registerServices() {
   getAndRegisterNavigationService();
   getAndRegisterBottomSheetService();
   getAndRegisterDialogService();
-  // @stacked-mock-register
+  getAndRegisterFirebaseMessagingSeviceService();
+  getAndRegisterNotificationService();
+// @stacked-mock-register
 }
 
 MockNavigationService getAndRegisterNavigationService() {
@@ -69,6 +76,20 @@ MockDialogService getAndRegisterDialogService() {
   return service;
 }
 
+MockFirebaseMessagingSeviceService
+    getAndRegisterFirebaseMessagingSeviceService() {
+  _removeRegistrationIfExists<FirebaseMessagingSeviceService>();
+  final service = MockFirebaseMessagingSeviceService();
+  locator.registerSingleton<FirebaseMessagingSeviceService>(service);
+  return service;
+}
+
+MockNotificationService getAndRegisterNotificationService() {
+  _removeRegistrationIfExists<NotificationService>();
+  final service = MockNotificationService();
+  locator.registerSingleton<NotificationService>(service);
+  return service;
+}
 // @stacked-mock-create
 
 void _removeRegistrationIfExists<T extends Object>() {

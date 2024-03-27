@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'hide User;
+import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:responder/app/app.locator.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:responder/model/user.dart';
-import 'package:responder/notification_service.dart';
 import 'package:responder/services/shared_pref_service.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
@@ -21,9 +21,11 @@ class HomeViewModel extends BaseViewModel {
   final PageController pageController = PageController(initialPage: 0);
   final _snackbarService = locator<SnackbarService>();
   final _sharedPref = locator<SharedPreferenceService>();
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
   StreamSubscription<User?>? streamSubscription;
 
-  NotificationService notificationService = NotificationService();
+  // NotificationService notificationService = NotificationService();
   Position? currentPositionOfUser;
   final Completer<GoogleMapController> googleMapCompleterController =
       Completer<GoogleMapController>();
@@ -40,6 +42,36 @@ class HomeViewModel extends BaseViewModel {
 
   get counterLabel => null;
   late User user;
+  late Timer timer;
+
+  BuildContext? context;
+
+  HomeViewModel(this.context);
+
+
+
+void showDialogBox(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Dialog Box"),
+        content: Text("This is a dialog box"),
+        actions: <Widget>[
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text("Close"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
 
   init() async {
     setBusy(true);
@@ -54,65 +86,65 @@ class HomeViewModel extends BaseViewModel {
     setBusy(false);
   }
 
- void _showUserLocation() async {
-  try {
-    // Get the user's location data from Firestore
-    DocumentSnapshot<Map<String, dynamic>>? userLocationSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser?.uid)
-        .get();
+  void _showUserLocation() async {
+    try {
+      // Get the user's location data from Firestore
+      DocumentSnapshot<Map<String, dynamic>>? userLocationSnapshot =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(FirebaseAuth.instance.currentUser?.uid)
+              .get();
 
-    if (userLocationSnapshot.exists) {
-      // Extract the location data as Map<String, dynamic>
-      Map<String, dynamic> locationData = userLocationSnapshot!.data()!;
+      if (userLocationSnapshot.exists) {
+        // Extract the location data as Map<String, dynamic>
+        Map<String, dynamic> locationData = userLocationSnapshot!.data()!;
 
-      // Extract the latitude and longitude from the location data
-      userLatitude = locationData['location']['latitude'];
-      userLongitude = locationData['location']['longitude'];
+        // Extract the latitude and longitude from the location data
+        userLatitude = locationData['location']['latitude'];
+        userLongitude = locationData['location']['longitude'];
 
-      // Create a Google Map widget and set the initial camera position to the user's location
-      // Code for creating Google Map widget and setting initial camera position should be added here
-    } else {
-      print('User location data not found.');
+        // Create a Google Map widget and set the initial camera position to the user's location
+        // Code for creating Google Map widget and setting initial camera position should be added here
+      } else {
+        print('User location data not found.');
+      }
+    } catch (error) {
+      print('Error fetching user location: $error');
+      // Handle error appropriately
     }
-  } catch (error) {
-    print('Error fetching user location: $error');
-    // Handle error appropriately
   }
-}
 
+  Future<void> storeCurrentLocationOfUser() async {
+    setBusy(true);
 
+    // Get current position of the user
+    Position positionOfUser = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation);
+    currentPositionOfUser = positionOfUser;
 
-Future<void> storeCurrentLocationOfUser() async {
-  setBusy(true);
+    // Get current date and time
+    DateTime currentDateTime = DateTime.now();
 
-  // Get current position of the user
-  Position positionOfUser = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.bestForNavigation);
-  currentPositionOfUser = positionOfUser;
+    // Store the location data in Firestore along with date and time
+    await FirebaseFirestore.instance
+        .collection('responder')
+        .doc(user.uid)
+        .update({
+      'latitude': positionOfUser.latitude,
+      'longitude': positionOfUser.longitude,
+      'timestamp': Timestamp.fromDate(currentDateTime),
+    });
 
-  // Convert current position to LatLng
-  LatLng positionOfUserInLatLang = LatLng(
-      currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
+    // Animate camera to user's current position
+    LatLng positionOfUserInLatLang = LatLng(
+        currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
+    CameraPosition cameraPosition =
+        CameraPosition(target: positionOfUserInLatLang, zoom: 15);
+    controllerGoogleMap!
+        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
 
-  // Get current date and time
-  DateTime currentDateTime = DateTime.now();
-
-  // Store the location data in Firestore along with date and time
-  await FirebaseFirestore.instance.collection('responder').doc(user.uid).update({
-    'location': GeoPoint(positionOfUser.latitude, positionOfUser.longitude),
-    'timestamp': Timestamp.fromDate(currentDateTime),
-  });
-
-  // Animate camera to user's current position
-  CameraPosition cameraPosition =
-      CameraPosition(target: positionOfUserInLatLang, zoom: 15);
-  controllerGoogleMap!
-      .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-
-  setBusy(false);
-}
-
+    setBusy(false);
+  }
 
   // getCurrentLiveLocationOfUser() async {
   //   Position positionOfUser = await Geolocator.getCurrentPosition(
@@ -130,7 +162,7 @@ Future<void> storeCurrentLocationOfUser() async {
   // }
 
   void initState() {
-    notificationService.requestNotificationPermission();
+    // notificationService.requestNotificationPermission();
   }
 
   void updateMapTheme(GoogleMapController controller) {
@@ -153,9 +185,8 @@ Future<void> storeCurrentLocationOfUser() async {
     controllerGoogleMap = mapController;
     googleMapCompleterController.complete(controllerGoogleMap);
     updateMapTheme(controllerGoogleMap!);
-    storeCurrentLocationOfUser();
-    // _showUserLocation();
-    
+    timer = Timer.periodic(
+        const Duration(seconds: 20), (Timer t) => storeCurrentLocationOfUser());
   }
 
   void goToProfileView() {
@@ -163,16 +194,15 @@ Future<void> storeCurrentLocationOfUser() async {
   }
 
   void onPageChanged(int index) {
-  currentPageIndex = index;
-  rebuildUi();
-  if (index == 1) {
-    storeCurrentLocationOfUser();
-    if (controllerGoogleMap != null) {
-      updateMapTheme(controllerGoogleMap!);
+    currentPageIndex = index;
+    rebuildUi();
+    if (index == 1) {
+      storeCurrentLocationOfUser();
+      if (controllerGoogleMap != null) {
+        updateMapTheme(controllerGoogleMap!);
+      }
     }
-  } 
-}
-
+  }
 
   void onDestinationSelected(int index) {
     currentPageIndex = index;
@@ -187,10 +217,12 @@ Future<void> storeCurrentLocationOfUser() async {
     );
   }
 
- 
-
-
-
+  @override
+  void dispose() {
+    timer.cancel();
+    streamSubscription?.cancel();
+    super.dispose();
+  }
 
   void incrementCounter() {}
 

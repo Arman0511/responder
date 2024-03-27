@@ -11,15 +11,12 @@ import 'package:responder/ui/views/forgot_password_view/forgot_password_view_vie
     as _i8;
 import 'package:responder/ui/views/home/home_view.dart' as _i2;
 import 'package:responder/ui/views/login/login_view.dart' as _i4;
-import 'package:responder/ui/views/message_view/message_view_view.dart'
-    as _i7;
-import 'package:responder/ui/views/profile_view/profile_view_view.dart'
-    as _i9;
+import 'package:responder/ui/views/message_view/message_view_view.dart' as _i7;
+import 'package:responder/ui/views/profile_view/profile_view_view.dart' as _i9;
 import 'package:responder/ui/views/responder_homepage/responder_homepage_view.dart'
     as _i5;
 import 'package:responder/ui/views/startup/startup_view.dart' as _i3;
-import 'package:responder/ui/views/user_sign_up/user_sign_up_view.dart'
-    as _i6;
+import 'package:responder/ui/views/user_sign_up/user_sign_up_view.dart' as _i6;
 import 'package:stacked/stacked.dart' as _i1;
 import 'package:stacked_services/stacked_services.dart' as _i11;
 

@@ -28,8 +28,6 @@ class ProfileViewViewModel extends BaseViewModel {
   final _sharedPref = locator<SharedPreferenceService>();
   StreamSubscription<User?>? streamSubscription;
 
-
-
   late User user;
 
   ImageProvider getImage() {
@@ -37,14 +35,14 @@ class ProfileViewViewModel extends BaseViewModel {
     return NetworkImage(user.image!);
   }
 
-void init() async {
+  void init() async {
     setBusy(true);
     user = (await _sharedPref.getCurrentUser())!;
     streamSubscription?.cancel();
     streamSubscription = _sharedPref.userStream.listen((userData) {
-      if(userData != null) {
+      if (userData != null) {
         user = userData;
-       rebuildUi();
+        rebuildUi();
       }
     });
     setBusy(false);
@@ -76,7 +74,10 @@ void init() async {
     response.fold((l) {
       showBottomSheet(l.message);
     }, (r) async {
-      await FirebaseFirestore.instance.collection('responder').doc(user.uid).update({
+      await FirebaseFirestore.instance
+          .collection('responder')
+          .doc(user.uid)
+          .update({
         'status': 'offline',
       });
       _navigationService.popRepeated(1);

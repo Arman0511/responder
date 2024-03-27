@@ -19,6 +19,8 @@ import 'package:responder/ui/dialogs/update_name/update_name_dialog.dart';
 import 'package:responder/ui/dialogs/update_email/update_email_dialog.dart';
 import 'package:responder/ui/dialogs/update_password/update_password_dialog.dart';
 import 'package:responder/ui/bottom_sheets/input_validation/input_validation_sheet.dart';
+import 'package:responder/services/firebase_messaging_sevice_service.dart';
+import 'package:responder/services/notification_service.dart';
 // @stacked-import
 
 @StackedApp(
@@ -41,9 +43,9 @@ import 'package:responder/ui/bottom_sheets/input_validation/input_validation_she
     LazySingleton(classType: SnackbarService),
     LazySingleton(classType: AuthenticationService),
     LazySingleton(classType: SharedPreferenceService),
-
-
-    // @stacked-service
+    LazySingleton(classType: FirebaseMessagingSeviceService),
+    LazySingleton(classType: NotificationService),
+// @stacked-service
   ],
   bottomsheets: [
     StackedBottomsheet(classType: NoticeSheet),
