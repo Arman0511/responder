@@ -50,6 +50,12 @@ class HomeViewModel extends BaseViewModel {
 
 
 
+void onNotificationClicked(Map<String, dynamic> message, BuildContext context) {
+  // Handle notification click here
+  showDialogBox(context);
+}
+
+
 void showDialogBox(BuildContext context) {
   showDialog(
     context: context,
@@ -84,6 +90,27 @@ void showDialogBox(BuildContext context) {
       }
     });
     setBusy(false);
+
+     _firebaseMessaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // Handle incoming messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Handle foreground messages
+      if (message.notification != null) {
+        // Handle notification payload when app is in the foreground
+        onNotificationClicked(message.data, context!);
+      }
+    });
+
+    // Handle notification clicks when app is in the background
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle notification payload when app is in the background
+      onNotificationClicked(message.data, context!);
+    });
   }
 
   void _showUserLocation() async {
@@ -162,7 +189,7 @@ void showDialogBox(BuildContext context) {
   // }
 
   void initState() {
-    // notificationService.requestNotificationPermission();
+   
   }
 
   void updateMapTheme(GoogleMapController controller) {

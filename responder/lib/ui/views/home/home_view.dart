@@ -194,4 +194,5 @@ class HomeView extends StackedView<HomeViewModel> {
   void onViewModelReady(HomeViewModel viewModel) {
     viewModel.init();
   }
+
 }
