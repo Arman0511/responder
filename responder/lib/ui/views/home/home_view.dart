@@ -76,7 +76,6 @@ class HomeView extends StackedView<HomeViewModel> {
                         10,
                         (index) => ElevatedButton(
                           onPressed: () {
-                            viewModel.showDialogBox(context);
                           },
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.black,

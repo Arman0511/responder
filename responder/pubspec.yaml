@@ -39,6 +39,7 @@ dependencies:
   cloud_firestore_web: ^3.10.6
   firebase_app_installations: ^0.2.4+19
   firebase_in_app_messaging: ^0.7.4+19
+  intl: ^0.18.1
   
 
  

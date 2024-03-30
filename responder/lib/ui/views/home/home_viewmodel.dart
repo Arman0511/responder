@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:responder/app/app.locator.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:responder/model/user.dart';
@@ -43,6 +44,12 @@ class HomeViewModel extends BaseViewModel {
   get counterLabel => null;
   late User user;
   late Timer timer;
+  String? userNeededHelpUid;
+  Timestamp? dateAndTime;
+  String? userName;
+  String? formattedDateAndTime;
+  
+
 
   BuildContext? context;
 
@@ -52,8 +59,88 @@ class HomeViewModel extends BaseViewModel {
 
 void onNotificationClicked(Map<String, dynamic> message, BuildContext context) {
   // Handle notification click here
-  showDialogBox(context);
+  Future.delayed(const Duration(seconds: 2), () {
+    showDialogBox(context);
+  });
 }
+
+Future<void> fetchData() async {
+  try {
+    // First, fetch user ID
+    await fetchUserIdFromUserNeededHelp();
+
+    // Then, fetch user name using the fetched user ID
+     userName = await fetchUserDetails();
+    
+    // Now you can use userName or perform any other actions with the fetched data
+    if (userName != null) {
+    } else {
+      print('User name not found.');
+    }
+  } catch (e) {
+    print('Error fetching data: $e');
+  }
+}
+
+
+Future<void> fetchUserIdFromUserNeededHelp() async {
+  try {
+    // Get a reference to the "responder" collection
+    CollectionReference responderCollection = FirebaseFirestore.instance.collection('responder');
+
+    // Get a reference to the document within the "responder" collection
+    DocumentReference docRef = responderCollection.doc(user.uid);
+
+    // Get a reference to the "userNeededHelp" subcollection
+    CollectionReference userNeededHelpCollection = docRef.collection('userNeededHelp');
+
+    // Get the document within the "userNeededHelp" subcollection
+    QuerySnapshot querySnapshot = await userNeededHelpCollection.get();
+
+    // Check if there are any documents returned
+    if (querySnapshot.docs.isNotEmpty) {
+      // Access the first document and get the "userId" field
+       userNeededHelpUid = querySnapshot.docs.first.get('userId');
+      print('User ID: $userNeededHelpUid');
+    } else {
+      print('No documents found in the "userNeededHelp" subcollection.');
+    }
+  } catch (e) {
+    print('Error fetching user ID: $e');
+  }
+}
+
+Future<String?> fetchUserDetails() async {
+  try {
+    // Get a reference to the "user" collection
+    CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+
+    // Get a reference to the document within the "user" collection
+    DocumentSnapshot docSnapshot = await userCollection.doc(userNeededHelpUid).get();
+
+    // Check if the document exists
+    if (docSnapshot.exists) {
+      // Retrieve the "name" and "timestamp" fields from the document
+      dateAndTime = docSnapshot.get('timestamp');
+      userName = docSnapshot.get('name');
+     
+
+      // Convert the Timestamp to a DateTime and format it
+      DateTime dateTime = dateAndTime!.toDate();
+      String formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
+
+      return '$userName | $formattedDateAndTime'; // Combine the two strings and return them
+    } else {
+      print('Document does not exist in the "user" collection.');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching user name: $e');
+    return null;
+  }
+}
+
+
 
 
 void showDialogBox(BuildContext context) {
@@ -62,7 +149,12 @@ void showDialogBox(BuildContext context) {
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text("Dialog Box"),
-        content: Text("This is a dialog box"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('User: $userName'),
+          ],
+        ),
         actions: <Widget>[
           ElevatedButton(
             onPressed: () {
@@ -80,38 +172,43 @@ void showDialogBox(BuildContext context) {
 
 
   init() async {
-    setBusy(true);
-    user = (await _sharedPref.getCurrentUser())!;
-    streamSubscription?.cancel();
-    streamSubscription = _sharedPref.userStream.listen((userData) {
-      if (userData != null) {
-        user = userData;
-        rebuildUi();
-      }
-    });
-    setBusy(false);
+  setBusy(true);
+  user = (await _sharedPref.getCurrentUser())!;
+  streamSubscription?.cancel();
+  streamSubscription = _sharedPref.userStream.listen((userData) {
+    if (userData != null) {
+      user = userData;
+      rebuildUi();
+    }
+  });
 
-     _firebaseMessaging.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+  // Fetch data here
+    timer = Timer.periodic(
+        const Duration(seconds: 2), (Timer t) => fetchData());
 
-    // Handle incoming messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // Handle foreground messages
-      if (message.notification != null) {
-        // Handle notification payload when app is in the foreground
-        onNotificationClicked(message.data, context!);
-      }
-    });
+  _firebaseMessaging.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
 
-    // Handle notification clicks when app is in the background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      // Handle notification payload when app is in the background
+  // Handle incoming messages
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    // Handle foreground messages
+    if (message.notification != null) {
+      // Handle notification payload when app is in the foreground
       onNotificationClicked(message.data, context!);
-    });
-  }
+    }
+  });
+
+  // Handle notification clicks when app is in the background
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    // Handle notification payload when app is in the background
+    onNotificationClicked(message.data, context!);
+  });
+
+  setBusy(false);
+}
 
   void _showUserLocation() async {
     try {
@@ -214,6 +311,8 @@ void showDialogBox(BuildContext context) {
     updateMapTheme(controllerGoogleMap!);
     timer = Timer.periodic(
         const Duration(seconds: 20), (Timer t) => storeCurrentLocationOfUser());
+        // fetchData();
+      
   }
 
   void goToProfileView() {
