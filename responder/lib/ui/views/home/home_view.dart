@@ -26,7 +26,7 @@ class HomeView extends StackedView<HomeViewModel> {
       body: Column(
         children: [
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.white,
@@ -53,7 +53,7 @@ class HomeView extends StackedView<HomeViewModel> {
             child: PageView(
               controller: viewModel.pageController,
               onPageChanged: viewModel.onPageChanged,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 SingleChildScrollView(
                   child: Column(children: [
@@ -69,57 +69,44 @@ class HomeView extends StackedView<HomeViewModel> {
                     ),
                   ]),
                 ),
-                SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      ...List.generate(
-                        10,
-                        (index) => ElevatedButton(
-                          onPressed: () {
-                          },
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            backgroundColor: index % 2 == 0 ? Colors.grey.shade200 : Colors.white,
-                            padding: EdgeInsets.all(16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            'Dialog Title',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20.0,
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Hi, how are you doing?',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      '(12:01 PM)',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey.shade600,
-                              ),
-                            ],
+                          SizedBox(height: 16.0),
+                          Text(
+                            'This is the content of the dialog. You can put any widgets here.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16.0,
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 16.0),
+                      
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -147,30 +134,30 @@ class HomeView extends StackedView<HomeViewModel> {
             child: NavigationBar(
               backgroundColor: Colors.white,
               height: 70,
-              shadowColor: Color(0xFF948D8D),
+              shadowColor: const Color(0xFF948D8D),
               selectedIndex: viewModel.currentPageIndex,
               onDestinationSelected: viewModel.onDestinationSelected,
               destinations: [
-                NavigationDestination(
+                const NavigationDestination(
                   icon: Icon(
                     Icons.home,
                     size: 30,
                   ),
                   selectedIcon: Icon(
                     Icons.home,
-                    color: const Color.fromARGB(255, 54, 244, 216),
+                    color: Color.fromARGB(255, 54, 244, 216),
                     size: 40,
                   ),
                   label: AppConstants.HomeText,
                 ),
-                NavigationDestination(
+                const NavigationDestination(
                   icon: Icon(
                     Icons.map,
                     size: 30,
                   ),
                   selectedIcon: Icon(
                     Icons.map,
-                    color: const Color.fromARGB(255, 54, 244, 216),
+                    color: Color.fromARGB(255, 54, 244, 216),
                     size: 40,
                   ),
                   label: AppConstants.mapsText,

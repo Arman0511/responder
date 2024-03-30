@@ -17,6 +17,7 @@ import 'package:responder/model/user.dart';
 import 'package:responder/services/shared_pref_service.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeViewModel extends BaseViewModel {
   final PageController pageController = PageController(initialPage: 0);
@@ -124,13 +125,16 @@ Future<String?> fetchUserDetails() async {
       // Retrieve the "name" and "timestamp" fields from the document
       dateAndTime = docSnapshot.get('timestamp');
       userName = docSnapshot.get('name');
+      userLatitude = docSnapshot.get('latitude');
+      userLongitude = docSnapshot.get('longitude');
+    
      
 
       // Convert the Timestamp to a DateTime and format it
       DateTime dateTime = dateAndTime!.toDate();
       String formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
 
-      return '$userName | $formattedDateAndTime'; // Combine the two strings and return them
+      return '$userName | $formattedDateAndTime | $userLatitude | $userLongitude'; // Combine the two strings and return them
     } else {
       print('Document does not exist in the "user" collection.');
       return null;
@@ -141,33 +145,61 @@ Future<String?> fetchUserDetails() async {
   }
 }
 
+Future<void> _openGoogleMaps(userLatitude, userLongitude) async {
+  String googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$userLatitude,$userLongitude';
+  await launch(googleMapsUrl);
+}
 
 
 
 void showDialogBox(BuildContext context) {
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
         title: Text("Dialog Box"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('User: $userName'),
-          ],
+        content: SingleChildScrollView( // Wrap content with SingleChildScrollView
+          scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('User: $userName'),
+            ],
+          ),
         ),
         actions: <Widget>[
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Close"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 110,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // Add your navigation logic here for "Navigate" button
+                  },
+                  child: Text("Call"),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                      _openGoogleMaps(userLatitude, userLongitude);                },
+                child: Text("Navigate"),
+              ),
+              
+            ],
           ),
         ],
       );
     },
   );
 }
+
+
+
+
+
 
 
 
@@ -211,33 +243,33 @@ void showDialogBox(BuildContext context) {
   setBusy(false);
 }
 
-  void _showUserLocation() async {
-    try {
-      // Get the user's location data from Firestore
-      DocumentSnapshot<Map<String, dynamic>>? userLocationSnapshot =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(FirebaseAuth.instance.currentUser?.uid)
-              .get();
+  // void _showUserLocation() async {
+  //   try {
+  //     // Get the user's location data from Firestore
+  //     DocumentSnapshot<Map<String, dynamic>>? userLocationSnapshot =
+  //         await FirebaseFirestore.instance
+  //             .collection('users')
+  //             .doc(FirebaseAuth.instance.currentUser?.uid)
+  //             .get();
 
-      if (userLocationSnapshot.exists) {
-        // Extract the location data as Map<String, dynamic>
-        Map<String, dynamic> locationData = userLocationSnapshot!.data()!;
+  //     if (userLocationSnapshot.exists) {
+  //       // Extract the location data as Map<String, dynamic>
+  //       Map<String, dynamic> locationData = userLocationSnapshot!.data()!;
 
-        // Extract the latitude and longitude from the location data
-        userLatitude = locationData['location']['latitude'];
-        userLongitude = locationData['location']['longitude'];
+  //       // Extract the latitude and longitude from the location data
+  //       userLatitude = locationData['location']['latitude'];
+  //       userLongitude = locationData['location']['longitude'];
 
-        // Create a Google Map widget and set the initial camera position to the user's location
-        // Code for creating Google Map widget and setting initial camera position should be added here
-      } else {
-        print('User location data not found.');
-      }
-    } catch (error) {
-      print('Error fetching user location: $error');
-      // Handle error appropriately
-    }
-  }
+  //       // Create a Google Map widget and set the initial camera position to the user's location
+  //       // Code for creating Google Map widget and setting initial camera position should be added here
+  //     } else {
+  //       print('User location data not found.');
+  //     }
+  //   } catch (error) {
+  //     print('Error fetching user location: $error');
+  //     // Handle error appropriately
+  //   }
+  // }
 
   Future<void> storeCurrentLocationOfUser() async {
     setBusy(true);
