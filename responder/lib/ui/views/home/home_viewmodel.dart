@@ -94,13 +94,13 @@ Future<void> fetchUserIdFromUserNeededHelp() async {
     // Get a reference to the "userNeededHelp" subcollection
     CollectionReference userNeededHelpCollection = docRef.collection('userNeededHelp');
 
-    // Get the document within the "userNeededHelp" subcollection
-    QuerySnapshot querySnapshot = await userNeededHelpCollection.get();
+    // Query documents ordered by timestamp in descending order (most recent first) and limit the result to 1
+    QuerySnapshot querySnapshot = await userNeededHelpCollection.orderBy('timestamp', descending: true).limit(1).get();
 
     // Check if there are any documents returned
     if (querySnapshot.docs.isNotEmpty) {
       // Access the first document and get the "userId" field
-       userNeededHelpUid = querySnapshot.docs.first.get('userId');
+      userNeededHelpUid = querySnapshot.docs.first.get('userId');
       print('User ID: $userNeededHelpUid');
     } else {
       print('No documents found in the "userNeededHelp" subcollection.');
@@ -109,6 +109,7 @@ Future<void> fetchUserIdFromUserNeededHelp() async {
     print('Error fetching user ID: $e');
   }
 }
+
 
 Future<String?> fetchUserDetails() async {
   try {
