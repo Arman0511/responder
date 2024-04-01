@@ -24,7 +24,7 @@ class UserSignUpView extends StackedView<UserSignUpViewModel> {
   ) {
     return AppBody(
         body: SingleChildScrollView(
-      child: Column(
+      child: viewModel.isBusy ? const Center(child: CircularProgressIndicator(),) : Column(
         children: [
           AppBar(),
           AppTitleText(text: AppConstants.createAccText),

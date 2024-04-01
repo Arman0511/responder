@@ -18,12 +18,15 @@ import 'package:responder/services/shared_pref_service.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'package:vibration/vibration.dart';
+
 
 class HomeViewModel extends BaseViewModel {
   final PageController pageController = PageController(initialPage: 0);
   final _snackbarService = locator<SnackbarService>();
   final _sharedPref = locator<SharedPreferenceService>();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
   StreamSubscription<User?>? streamSubscription;
 
@@ -49,6 +52,9 @@ class HomeViewModel extends BaseViewModel {
   Timestamp? dateAndTime;
   String? userName;
   String? formattedDateAndTime;
+  String? phoneNum;
+  String? responderFCMToken;
+  String? userConcern;
   
 
 
@@ -57,13 +63,60 @@ class HomeViewModel extends BaseViewModel {
   HomeViewModel(this.context);
 
 
+void sendNotification() async {
+  // Check if nearestFCMToken is not null before sending the notification
+  if (responderFCMToken != null) {
+    final uri = Uri.parse('https://fcm.googleapis.com/fcm/send');
+    await http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'key=AAAApeeRKFQ:APA91bG2STzaKtq-pwEZQA6nAdzkbFwGqz80bvaF-wM4I1uQIIDOO8pYKz2kIEyPoJEZW3pn6oHrtARdewwttGkVS18gaf1380kC7LpFltrTNKO2FXCZJ5bPX8Ruq9k0LexXudcjaf9I', // Your FCM server key
+      },
+      body: jsonEncode(
+        <String, dynamic>{
+          'notification': <String, dynamic>{
+            'body': '',
+            'title': 'Responder is On The Way!!!',
+            'android_channel_id': 'your_channel_id', // Required for Android 8.0 and above
+            'alert': 'standard', // Set to 'standard' to show a dialog box
+          },
+          'priority': 'high',
+          'data': <String, dynamic>{
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'screen': 'dialog_box', // Screen to open in receiver app
+          },
+          'to': responderFCMToken, // Receiver's FCM token
+        },
+      ),
+    );
+  } else {
+    print('Nearest responder FCM token is null. Cannot send notification.');
+  }
+}
 
-void onNotificationClicked(Map<String, dynamic> message, BuildContext context) {
+
+
+void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
   // Handle notification click here
   Future.delayed(const Duration(seconds: 2), () {
-    showDialogBox(context);
+    showDialogBox(context!);
+    
   });
 }
+
+
+Future<void> vibrate() async {
+    // Check if the device supports vibration
+    bool? hasVibrator = await Vibration.hasVibrator();
+    if (hasVibrator != null && hasVibrator) {
+      // Vibrate for 500ms
+      Vibration.vibrate(duration: 5000);
+    } else {
+      // Device doesn't support vibration or it's null
+      print('Device does not support vibration');
+    }
+  }
 
 Future<void> fetchData() async {
   try {
@@ -122,34 +175,55 @@ Future<String?> fetchUserDetails() async {
 
     // Check if the document exists
     if (docSnapshot.exists) {
-      // Retrieve the "name" and "timestamp" fields from the document
+      // Retrieve other fields as you were doing before
       dateAndTime = docSnapshot.get('timestamp');
       userName = docSnapshot.get('name');
+      phoneNum = docSnapshot.get('phonenumber');
+      responderFCMToken = docSnapshot.get('fcmToken');
       userLatitude = docSnapshot.get('latitude');
       userLongitude = docSnapshot.get('longitude');
-    
-     
+
+      // Handle the array field userConcern
+      List<dynamic>? userConcernList = docSnapshot.get('concerns');
+      if (userConcernList != null) {
+        // Join concerns into a single string
+        userConcern = userConcernList.join(', ');
+      } else {
+        userConcern = ''; // or any default value if null is not acceptable
+      }
 
       // Convert the Timestamp to a DateTime and format it
       DateTime dateTime = dateAndTime!.toDate();
-      String formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
+      formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
 
-      return '$userName | $formattedDateAndTime | $userLatitude | $userLongitude'; // Combine the two strings and return them
+      return userName;
     } else {
       print('Document does not exist in the "user" collection.');
       return null;
     }
   } catch (e) {
-    print('Error fetching user name: $e');
+    print('Error fetching user details: $e');
     return null;
   }
 }
+
+
+
 
 Future<void> _openGoogleMaps(userLatitude, userLongitude) async {
   String googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$userLatitude,$userLongitude';
   await launch(googleMapsUrl);
 }
 
+
+launchDialer(String number) async {
+  String url = 'tel:' + number;
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Application unable to open dialer.';
+  }
+}
 
 
 void showDialogBox(BuildContext context) {
@@ -158,13 +232,18 @@ void showDialogBox(BuildContext context) {
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text("Dialog Box"),
+        title: Text("User Information"),
         content: SingleChildScrollView( // Wrap content with SingleChildScrollView
           scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('User: $userName'),
+              Text('Patient Name: $userName'),
+              Text('User is need of: $userConcern'),
+              Text('Phone Number: $phoneNum'),
+              Text('Date: $formattedDateAndTime'),
+              
+
             ],
           ),
         ),
@@ -176,15 +255,16 @@ void showDialogBox(BuildContext context) {
                 width: 110,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
-                    // Add your navigation logic here for "Navigate" button
+                    launchDialer(phoneNum!);
                   },
                   child: Text("Call"),
                 ),
               ),
               ElevatedButton(
                 onPressed: () {
-                      _openGoogleMaps(userLatitude, userLongitude);                },
+                      _openGoogleMaps(userLatitude, userLongitude);
+                       sendNotification();
+                      },
                 child: Text("Navigate"),
               ),
               
@@ -195,11 +275,6 @@ void showDialogBox(BuildContext context) {
     },
   );
 }
-
-
-
-
-
 
 
 
@@ -219,57 +294,75 @@ void showDialogBox(BuildContext context) {
     timer = Timer.periodic(
         const Duration(seconds: 2), (Timer t) => fetchData());
 
-  _firebaseMessaging.setForegroundNotificationPresentationOptions(
+//    // Set foreground notification presentation options
+//   await firebaseMessaging.setForegroundNotificationPresentationOptions(
+//     alert: true,
+//     badge: true,
+//     sound: true,
+//   );
+
+//   // Listen for incoming messages
+//   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+//     // Handle foreground messages
+//     if (message.notification != null) {
+//       // Handle notification payload when app is in the foreground
+//       onNotificationClicked(message.data, context!);
+//       vibrate();
+//     }
+//   });
+
+//   // Listen for notification clicks when app is in the background
+//   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//     // Handle notification payload when app is in the background
+//     onNotificationClicked(message.data, context!);
+//     vibrate();
+//   });
+// }
+
+// Future<void> _handleBackgroundMessage(RemoteMessage message) async {
+//   if (message.notification != null) {
+//     // Handle notification payload when app is completely closed
+//     onNotificationClicked(message.data, context!);
+//     vibrate();
+//   }
+
+
+ FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
+
+  // Set foreground notification presentation options
+  FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
     badge: true,
     sound: true,
   );
 
-  // Handle incoming messages
+  // Listen for incoming messages
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     // Handle foreground messages
     if (message.notification != null) {
       // Handle notification payload when app is in the foreground
-      onNotificationClicked(message.data, context!);
+      onNotificationClicked(message.data, true);
+      vibrate();
     }
   });
 
-  // Handle notification clicks when app is in the background
+  // Listen for notification clicks when app is in the background
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     // Handle notification payload when app is in the background
-    onNotificationClicked(message.data, context!);
+    onNotificationClicked(message.data, true);
+    vibrate();
   });
-
   setBusy(false);
 }
 
-  // void _showUserLocation() async {
-  //   try {
-  //     // Get the user's location data from Firestore
-  //     DocumentSnapshot<Map<String, dynamic>>? userLocationSnapshot =
-  //         await FirebaseFirestore.instance
-  //             .collection('users')
-  //             .doc(FirebaseAuth.instance.currentUser?.uid)
-  //             .get();
 
-  //     if (userLocationSnapshot.exists) {
-  //       // Extract the location data as Map<String, dynamic>
-  //       Map<String, dynamic> locationData = userLocationSnapshot!.data()!;
-
-  //       // Extract the latitude and longitude from the location data
-  //       userLatitude = locationData['location']['latitude'];
-  //       userLongitude = locationData['location']['longitude'];
-
-  //       // Create a Google Map widget and set the initial camera position to the user's location
-  //       // Code for creating Google Map widget and setting initial camera position should be added here
-  //     } else {
-  //       print('User location data not found.');
-  //     }
-  //   } catch (error) {
-  //     print('Error fetching user location: $error');
-  //     // Handle error appropriately
-  //   }
-  // }
+Future<void> _handleBackgroundMessage(RemoteMessage message) async {
+  if (message.notification != null) {
+    // Handle notification payload when app is completely closed
+    onNotificationClicked(message.data, true);
+    vibrate();
+  }
+}
 
   Future<void> storeCurrentLocationOfUser() async {
     setBusy(true);
@@ -299,24 +392,9 @@ void showDialogBox(BuildContext context) {
         CameraPosition(target: positionOfUserInLatLang, zoom: 15);
     controllerGoogleMap!
         .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-
     setBusy(false);
+    
   }
-
-  // getCurrentLiveLocationOfUser() async {
-  //   Position positionOfUser = await Geolocator.getCurrentPosition(
-  //       desiredAccuracy: LocationAccuracy.bestForNavigation);
-  //   currentPositionOfUser = positionOfUser;
-
-  //   LatLng positionOfUserInLatLang = LatLng(
-  //       currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
-  //   CameraPosition cameraPosition =
-  //       CameraPosition(target: positionOfUserInLatLang, zoom: 15);
-  //   controllerGoogleMap!
-  //       .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-  //   rebuildUi();
-  //   print("Created Map");
-  // }
 
   void initState() {
    

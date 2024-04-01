@@ -58,31 +58,12 @@ Future<void> main() async {
     print('Location permission is permanently denied, please enable it from the settings.');
   }
 
-  // Set up a background message handler
-  FirebaseMessaging.onBackgroundMessage((RemoteMessage message) async {
-    await setupLocator();
-    // Handle background messages
-    NotificationService notificationService = locator<NotificationService>();
-    await notificationService.showFlutterNotification(navigatorKey.currentState!.context, message);
-  });
-
   // Initialize a FlutterLocalNotificationsPlugin object
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   const AndroidInitializationSettings androidInitializationSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initializationSettings = InitializationSettings(android: androidInitializationSettings);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-  // Set up a foreground notification listener
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-    // Handle foreground messages
-    print('Foreground message: ${message.notification}');
-    if (message.notification != null) {
-      // Display the notification using FlutterLocalNotificationsPlugin
-      const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails('your channel id', 'your channel name', importance: Importance.max, priority: Priority.high);
-      const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-      await flutterLocalNotificationsPlugin.show(0, message.notification!.title, message.notification!.body, platformChannelSpecifics, payload: message.data['body']);
-    }
-  });
 
   // Initialize the locator
   setupLocator();

@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:responder/app/app.bottomsheets.dart';
 import 'package:responder/app/app.router.dart';
+import 'package:responder/model/user.dart';
 import 'package:responder/services/authentication_service.dart';
 import 'package:responder/services/shared_pref_service.dart';
 import 'package:responder/ui/common/input_validation.dart';
@@ -19,6 +24,13 @@ class LoginViewModel extends BaseViewModel with InputValidation {
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  Position? currentPositionOfUser;
+    late User user;
+  final Completer<GoogleMapController> googleMapCompleterController =
+      Completer<GoogleMapController>();
+  GoogleMapController? controllerGoogleMap;
+
+
 
   Future<void> logIn() async {
     if (validateInput()) {
@@ -40,9 +52,42 @@ class LoginViewModel extends BaseViewModel with InputValidation {
           'fcmToken': fcmToken,
           'status': 'online',
         });
+        storeCurrentLocationOfUser();
         _navigationService.replaceWithHomeView();
       });
     }
+  }
+
+    Future<void> storeCurrentLocationOfUser() async {
+    setBusy(true);
+
+    // Get current position of the user
+    Position positionOfUser = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation);
+    currentPositionOfUser = positionOfUser;
+
+    // Get current date and time
+    DateTime currentDateTime = DateTime.now();
+
+    // Store the location data in Firestore along with date and time
+    await FirebaseFirestore.instance
+        .collection('responder')
+        .doc(user.uid)
+        .update({
+      'latitude': positionOfUser.latitude,
+      'longitude': positionOfUser.longitude,
+      'timestamp': Timestamp.fromDate(currentDateTime),
+    });
+
+    // Animate camera to user's current position
+    LatLng positionOfUserInLatLang = LatLng(
+        currentPositionOfUser!.latitude, currentPositionOfUser!.longitude);
+    CameraPosition cameraPosition =
+        CameraPosition(target: positionOfUserInLatLang, zoom: 15);
+    controllerGoogleMap!
+        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    setBusy(false);
+    
   }
 
   bool validateInput() {

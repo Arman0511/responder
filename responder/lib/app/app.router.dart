@@ -11,10 +11,7 @@ import 'package:responder/ui/views/forgot_password_view/forgot_password_view_vie
     as _i8;
 import 'package:responder/ui/views/home/home_view.dart' as _i2;
 import 'package:responder/ui/views/login/login_view.dart' as _i4;
-import 'package:responder/ui/views/message_view/message_view_view.dart' as _i7;
 import 'package:responder/ui/views/profile_view/profile_view_view.dart' as _i9;
-import 'package:responder/ui/views/responder_homepage/responder_homepage_view.dart'
-    as _i5;
 import 'package:responder/ui/views/startup/startup_view.dart' as _i3;
 import 'package:responder/ui/views/user_sign_up/user_sign_up_view.dart' as _i6;
 import 'package:stacked/stacked.dart' as _i1;
@@ -64,17 +61,10 @@ class StackedRouter extends _i1.RouterBase {
       page: _i4.LoginView,
     ),
     _i1.RouteDef(
-      Routes.responderHomepageView,
-      page: _i5.ResponderHomepageView,
-    ),
-    _i1.RouteDef(
       Routes.userSignUpView,
       page: _i6.UserSignUpView,
     ),
-    _i1.RouteDef(
-      Routes.messageViewView,
-      page: _i7.MessageViewView,
-    ),
+  
     _i1.RouteDef(
       Routes.forgotPasswordViewView,
       page: _i8.ForgotPasswordViewView,
@@ -104,21 +94,10 @@ class StackedRouter extends _i1.RouterBase {
         settings: data,
       );
     },
-    _i5.ResponderHomepageView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i5.ResponderHomepageView(),
-        settings: data,
-      );
-    },
+   
     _i6.UserSignUpView: (data) {
       return _i10.MaterialPageRoute<dynamic>(
         builder: (context) => const _i6.UserSignUpView(),
-        settings: data,
-      );
-    },
-    _i7.MessageViewView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i7.MessageViewView(),
         settings: data,
       );
     },

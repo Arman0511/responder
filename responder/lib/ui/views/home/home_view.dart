@@ -46,18 +46,55 @@ class HomeView extends StackedView<HomeViewModel> {
               ],
             ),
           ),
-          SizedBox(
-            height: screenHeight * 0.03, // Set height to 3% of screen height
-          ),
-          Expanded(
-            child: PageView(
-              controller: viewModel.pageController,
-              onPageChanged: viewModel.onPageChanged,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                SingleChildScrollView(
-                  child: Column(children: [
-                    SizedBox(
+                        SizedBox(
+                          height: screenHeight * 0.03, // Set height to 3% of screen height
+                        ),
+                        Expanded(
+                          child: PageView(
+                            controller: viewModel.pageController,
+                            onPageChanged: viewModel.onPageChanged,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              SingleChildScrollView(
+                                child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          'Dialog Title',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20.0,
+                          ),
+                        ),
+                        SizedBox(height: 16.0),
+                        Text(
+                          'This is the content of the dialog. You can put any widgets here.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16.0,
+                          ),
+                        ),
+                        SizedBox(height: 16.0),
+                        ElevatedButton(
+                            onPressed: () async {
+                              await viewModel.vibrate();
+                            },
+                            child: Text('Button'),
+                          )
+
+                      ],
+                    ),
+                  ),
+                ),   
+                      SingleChildScrollView(
+                      child: Column(children: [
+                        SizedBox(
                       height: screenHeight *
                           0.3, // Set height to 30% of screen height
                       child: GoogleMap(
@@ -68,45 +105,9 @@ class HomeView extends StackedView<HomeViewModel> {
                       ),
                     ),
                   ]),
-                ),
-                Dialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                  child: SingleChildScrollView(
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16.0),
-                      ),
-                      child: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            'Dialog Title',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20.0,
-                            ),
-                          ),
-                          SizedBox(height: 16.0),
-                          Text(
-                            'This is the content of the dialog. You can put any widgets here.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16.0,
-                            ),
-                          ),
-                          SizedBox(height: 16.0),
-                      
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+
+
+              ),
               ],
             ),
           ),
