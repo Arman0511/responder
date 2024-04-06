@@ -1,15 +1,14 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:responder/app/app.locator.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:responder/methods/common_methods.dart';
+import 'package:responder/services/authentication_service.dart';
+import 'package:responder/ui/common/app_constants.dart';
+import 'package:responder/ui/common/app_exception_constants.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
-import '../../../app/app.locator.dart';
-import '../../../services/authentication_service.dart';
-import '../../common/app_constants.dart';
-import '../../common/app_exception_constants.dart';
-
-class UserSignUpViewModel extends BaseViewModel {
+class AdminSignupViewModel extends BaseViewModel {
   final phoneNumTextController = TextEditingController();
   final nameTextController = TextEditingController();
   final emailTextController = TextEditingController();
@@ -40,7 +39,7 @@ class UserSignUpViewModel extends BaseViewModel {
       _snackBarService.showSnackbar(message: verifyForm);
     } else {
       setBusy(true);
-      final response = await _authenticationService.signup(
+      final response = await _authenticationService.adminSignup(
         nameTextController.text,
         emailTextController.text,
         passwordTextController.text,
@@ -55,7 +54,7 @@ class UserSignUpViewModel extends BaseViewModel {
         _snackBarService.showSnackbar(
             message: AppConstants.accountCreatedText,
             duration: const Duration(seconds: 2));
-        _navigatorService.replaceWithLoginView();
+        _navigatorService.replaceWithAdminView();
       });
     }
   }

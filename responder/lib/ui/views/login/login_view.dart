@@ -24,45 +24,74 @@ class LoginView extends StackedView<LoginViewModel> {
   ) {
     return AppBody(
       body: SingleChildScrollView(
-        child: viewModel.isBusy ? const Center(child: CircularProgressIndicator(),) : Column(
-          children: [
-            const AppTitleText(text: AppConstants.welcomeText),
-            const SizedBox(
-              height: 10,
-            ),
-            const AppImage(path: AppPng.AppAuthLoginPath),
-            const SizedBox(
-              height: 25,
-            ),
-            AppTextField(
-              controller: viewModel.emailController,
-              label: AppConstants.emailText,
-            ),
-            AppPasswordTextField(
-              controller: viewModel.passwordController,
-              label: AppConstants.passwordText,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            AppButton(
-              text: AppConstants.loginText,
-              onClick: viewModel.logIn,
-              isSelected: false,
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            AppTextButton(
-              title: AppConstants.createNewAccText,
-              onClick: viewModel.goToSignUp,
-            ),
-            AppTextButton(
-              title: AppConstants.forgotPassText,
-              onClick: viewModel.goToForgotPassword,
-            ),
-          ],
-        ),
+        child: viewModel.isBusy
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : Column(
+                children: [
+                  const AppTitleText(text: AppConstants.welcomeText),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const AppImage(path: AppPng.AppAuthLoginPath),
+                  const SizedBox(
+                    height: 25,
+                  ),
+                  AppTextField(
+                    controller: viewModel.emailController,
+                    label: AppConstants.emailText,
+                  ),
+                  AppPasswordTextField(
+                    controller: viewModel.passwordController,
+                    label: AppConstants.passwordText,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  AppButton(
+                    text: AppConstants.loginText,
+                    onClick: viewModel.logIn,
+                    isSelected: false,
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  AppTextButton(
+                    title: AppConstants.createNewAccText,
+                    onClick: viewModel.goToSignUp,
+                  ),
+                  AppTextButton(
+                    title: AppConstants.forgotPassText,
+                    onClick: viewModel.goToForgotPassword,
+                  ),
+                  ElevatedButton(
+                    onPressed: viewModel.showadminLoginDialog,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: const BorderSide(
+                          color: Colors.black,
+                          style: BorderStyle.solid,
+                          width: 2,
+                        ),
+                      ),
+                      backgroundColor: Colors.white,
+                      shadowColor: Colors.grey,
+                    ),
+                    child: const Text(
+                      "Login as Admin",
+                      style: TextStyle(
+                        color: Colors.black,
+                        letterSpacing: 1,
+                        wordSpacing: 2,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

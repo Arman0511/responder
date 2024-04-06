@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:responder/app/app.bottomsheets.dart';
+import 'package:responder/app/app.dialogs.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:responder/model/user.dart';
 import 'package:responder/services/authentication_service.dart';
@@ -21,16 +22,15 @@ class LoginViewModel extends BaseViewModel with InputValidation {
   final _authenticationService = locator<AuthenticationService>();
   final _bottomSheetService = locator<BottomSheetService>();
   final _sharedPref = locator<SharedPreferenceService>();
+  final _dialogService = locator<DialogService>();
 
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   Position? currentPositionOfUser;
-    late User user;
+  late User user;
   final Completer<GoogleMapController> googleMapCompleterController =
       Completer<GoogleMapController>();
   GoogleMapController? controllerGoogleMap;
-
-
 
   Future<void> logIn() async {
     if (validateInput()) {
@@ -50,7 +50,6 @@ class LoginViewModel extends BaseViewModel with InputValidation {
             .doc(user.uid)
             .update({
           'fcmToken': fcmToken,
-          'status': 'online',
         });
         storeCurrentLocationOfUser();
         _navigationService.replaceWithHomeView();
@@ -58,7 +57,13 @@ class LoginViewModel extends BaseViewModel with InputValidation {
     }
   }
 
-    Future<void> storeCurrentLocationOfUser() async {
+  void showadminLoginDialog() async {
+    await _dialogService.showCustomDialog(
+      variant: DialogType.adminLogin,
+    );
+  }
+
+  Future<void> storeCurrentLocationOfUser() async {
     setBusy(true);
 
     // Get current position of the user
@@ -87,7 +92,6 @@ class LoginViewModel extends BaseViewModel with InputValidation {
     controllerGoogleMap!
         .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     setBusy(false);
-    
   }
 
   bool validateInput() {

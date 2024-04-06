@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:responder/app/app.bottomsheets.dart';
@@ -9,39 +8,43 @@ import 'package:responder/app/app.dialogs.dart';
 import 'package:responder/app/app.locator.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:responder/methods/common_methods.dart';
-import 'package:responder/model/user.dart';
+import 'package:responder/model/admin.dart';
 import 'package:responder/services/authentication_service.dart';
 import 'package:responder/services/shared_pref_service.dart';
 import 'package:responder/ui/constants/app_png.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
+
 XFile? imageFile;
 String urlOfUploadedImage = "";
 
-class ProfileViewViewModel extends BaseViewModel {
-  CommonMethods cmethods = CommonMethods();
+class AdminProfileViewModel extends BaseViewModel {
+
+   CommonMethods cmethods = CommonMethods();
   final _dialogService = locator<DialogService>();
   final _authService = locator<AuthenticationService>();
   final _bottomSheetServ = locator<BottomSheetService>();
   final _navigationService = locator<NavigationService>();
   final _sharedPref = locator<SharedPreferenceService>();
-  StreamSubscription<User?>? streamSubscription;
 
-  late User user;
+  StreamSubscription<Admin?>? streamSubscription;
+
+  late Admin admin;
 
   ImageProvider getImage() {
-    if (user.image == null) return const AssetImage(AppPng.AppAvatarPath);
-    return NetworkImage(user.image!);
+    if (admin.image == null) return const AssetImage(AppPng.AppAvatarPath);
+    return NetworkImage(admin.image!);
   }
 
-  void init() async {
+
+void init() async {
     setBusy(true);
-    user = (await _sharedPref.getCurrentUser())!;
+    admin = (await _sharedPref.getCurrentAdmin())!;
     streamSubscription?.cancel();
-    streamSubscription = _sharedPref.userStream.listen((userData) {
+    streamSubscription = _sharedPref.adminStream.listen((userData) {
       if (userData != null) {
-        user = userData;
+        admin = userData;
         rebuildUi();
       }
     });
@@ -68,15 +71,15 @@ class ProfileViewViewModel extends BaseViewModel {
 
   Future<void> logOut() async {
     setBusy(true);
-    final response = await _authService.logout();
+    final response = await _authService.logoutAdmin();
     setBusy(false);
 
     response.fold((l) {
       showBottomSheet(l.message);
     }, (r) async {
       await FirebaseFirestore.instance
-          .collection('responder')
-          .doc(user.uid)
+          .collection('admin')
+          .doc(admin.uid)
           .update({
         'status': 'offline',
       });

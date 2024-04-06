@@ -46,124 +46,136 @@ class HomeView extends StackedView<HomeViewModel> {
               ],
             ),
           ),
-                        SizedBox(
-                          height: screenHeight * 0.03, // Set height to 3% of screen height
-                        ),
-                        Expanded(
-                          child: PageView(
-                            controller: viewModel.pageController,
-                            onPageChanged: viewModel.onPageChanged,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: [
-                              SingleChildScrollView(
-                                child: Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          'Dialog Title',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20.0,
-                          ),
-                        ),
-                        SizedBox(height: 16.0),
-                        Text(
-                          'This is the content of the dialog. You can put any widgets here.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16.0,
-                          ),
-                        ),
-                        SizedBox(height: 16.0),
-                        ElevatedButton(
-                            onPressed: () async {
-                              await viewModel.vibrate();
-                            },
-                            child: Text('Button'),
-                          )
-
-                      ],
-                    ),
-                  ),
-                ),   
-                      SingleChildScrollView(
-                      child: Column(children: [
-                        SizedBox(
-                      height: screenHeight *
-                          0.3, // Set height to 30% of screen height
-                      child: GoogleMap(
-                        mapType: MapType.normal,
-                        myLocationEnabled: true,
-                        initialCameraPosition: googlePlexInitialPosition,
-                        onMapCreated: viewModel.mapCreated,
-                      ),
-                    ),
-                  ]),
-
-
-              ),
-              ],
+          SizedBox(
+            height: screenHeight * 0.03, // Set height to 3% of screen height
+          ),
+          Text(
+            'User Who Notified',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          NavigationBarTheme(
-            data: NavigationBarThemeData(
-              indicatorColor: Colors.white,
-              labelTextStyle: MaterialStateProperty.resolveWith<TextStyle>(
-                (Set<MaterialState> states) {
-                  if (states.contains(MaterialState.selected)) {
-                    return const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFE35629),
-                    );
-                  } else {
-                    return const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    );
-                  }
-                },
+          SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  FutureBuilder<QuerySnapshot<Object?>>(
+                    future: viewModel.fetchEmergencyHistory(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else if (snapshot.hasData &&
+                          snapshot.data!.docs.isNotEmpty) {
+                        var doc = snapshot.data!
+                            .docs[0]; // Get the first (most recent) document
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 8.0),
+                          padding: EdgeInsets.all(12.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8.0),
+                            color: Colors.white, // Add a background color
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: Offset(0, 3), // Add a drop shadow
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment
+                                  .center, // Center the contents
+                              children: [
+                                // Display image if available
+                                if (doc['userImage'] != null)
+                                  GestureDetector(
+                                    onTap: () {
+                                      // Show dialog box with full-size image
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Dialog(
+                                            child:
+                                                Image.network(doc['userImage']),
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Image.network(
+                                      doc['userImage'],
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                SizedBox(height: 16.0), // Add some spacing
+                                Text('User Name: ${doc['userName']}'),
+                                SizedBox(height: 8.0), // Add some spacing
+                                Text('Phone Num: ${doc['phoneNum']}'),
+                                SizedBox(height: 8.0), // Add some spacing
+                                Text('User Concern: ${doc['userConcern']}'),
+                                SizedBox(height: 8.0), // Add some spacing
+                                Text(
+                                    'Formatted Date and Time: ${doc['formattedDateAndTime']}'),
+                              ],
+                            ),
+                          ),
+                        );
+                      } else {
+                        return Text('No data available.');
+                      }
+                    },
+                  ),
+                  SizedBox(
+                    height: 20.0, // Add spacing between the box and the button
+                  ),
+                  Tooltip(
+                    message:
+                        'Click this button if you arrived at the destination',
+                    child: Container(
+                      width: double
+                          .infinity, // Make the button take up the full width
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Action when the button is pressed
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.blue, // Change the text color
+                          padding: EdgeInsets.symmetric(
+                              vertical:
+                                  16.0), // Increase the height of the button
+                        ),
+                        child: Text('Arrived'),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height:
+                        16.0, // Add some spacing between the button and the description
+                  ),
+                  Text(
+                    'Click this button if you arrived at the destination',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      textBaseline: TextBaseline.alphabetic,
+                      fontStyle: FontStyle.normal, // Italicize the text
+                      color: Colors
+                          .black54, // Change the text color to a darker shade of grey
+                      fontSize: 20, // Increase the font size
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: NavigationBar(
-              backgroundColor: Colors.white,
-              height: 70,
-              shadowColor: const Color(0xFF948D8D),
-              selectedIndex: viewModel.currentPageIndex,
-              onDestinationSelected: viewModel.onDestinationSelected,
-              destinations: [
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.home,
-                    size: 30,
-                  ),
-                  selectedIcon: Icon(
-                    Icons.home,
-                    color: Color.fromARGB(255, 54, 244, 216),
-                    size: 40,
-                  ),
-                  label: AppConstants.HomeText,
-                ),
-                const NavigationDestination(
-                  icon: Icon(
-                    Icons.map,
-                    size: 30,
-                  ),
-                  selectedIcon: Icon(
-                    Icons.map,
-                    color: Color.fromARGB(255, 54, 244, 216),
-                    size: 40,
-                  ),
-                  label: AppConstants.mapsText,
-                ),
-              ],
             ),
           ),
         ],
@@ -181,5 +193,4 @@ class HomeView extends StackedView<HomeViewModel> {
   void onViewModelReady(HomeViewModel viewModel) {
     viewModel.init();
   }
-
 }

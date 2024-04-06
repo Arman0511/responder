@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:responder/ui/constants/app_color.dart';
+import 'package:responder/ui/common/app_constants.dart';
 import 'package:responder/ui/constants/app_png.dart';
 import 'package:responder/ui/custom_widget/app2_button.dart';
 import 'package:responder/ui/custom_widget/app_body.dart';
@@ -9,17 +9,15 @@ import 'package:responder/ui/custom_widget/app_textfield.dart';
 import 'package:responder/ui/custom_widget/app_title_text.dart';
 import 'package:stacked/stacked.dart';
 
-import '../../common/app_constants.dart';
-import '../../custom_widget/app_button.dart';
-import 'user_sign_up_viewmodel.dart';
+import 'admin_signup_viewmodel.dart';
 
-class UserSignUpView extends StackedView<UserSignUpViewModel> {
-  const UserSignUpView({Key? key}) : super(key: key);
+class AdminSignupView extends StackedView<AdminSignupViewModel> {
+  const AdminSignupView({Key? key}) : super(key: key);
 
   @override
   Widget builder(
     BuildContext context,
-    UserSignUpViewModel viewModel,
+    AdminSignupViewModel viewModel,
     Widget? child,
   ) {
     return AppBody(
@@ -73,8 +71,8 @@ class UserSignUpView extends StackedView<UserSignUpViewModel> {
   }
 
   @override
-  UserSignUpViewModel viewModelBuilder(
+  AdminSignupViewModel viewModelBuilder(
     BuildContext context,
   ) =>
-      UserSignUpViewModel();
+      AdminSignupViewModel();
 }

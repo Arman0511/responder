@@ -8,7 +8,6 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> requestNotificationPermission() async {
-    
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: true,
@@ -29,8 +28,8 @@ class NotificationService {
     }
   }
 
-
-  Future<void> showFlutterNotification(BuildContext context, RemoteMessage message) async {
+  Future<void> showFlutterNotification(
+      BuildContext context, RemoteMessage message) async {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {

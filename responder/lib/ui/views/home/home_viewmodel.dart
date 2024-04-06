@@ -21,12 +21,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:vibration/vibration.dart';
 
-
 class HomeViewModel extends BaseViewModel {
   final PageController pageController = PageController(initialPage: 0);
   final _snackbarService = locator<SnackbarService>();
   final _sharedPref = locator<SharedPreferenceService>();
-FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
 
   StreamSubscription<User?>? streamSubscription;
 
@@ -55,58 +54,54 @@ FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   String? phoneNum;
   String? responderFCMToken;
   String? userConcern;
-  
-
+  String? userImage;
 
   BuildContext? context;
 
   HomeViewModel(this.context);
 
-
-void sendNotification() async {
-  // Check if nearestFCMToken is not null before sending the notification
-  if (responderFCMToken != null) {
-    final uri = Uri.parse('https://fcm.googleapis.com/fcm/send');
-    await http.post(
-      uri,
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'key=AAAApeeRKFQ:APA91bG2STzaKtq-pwEZQA6nAdzkbFwGqz80bvaF-wM4I1uQIIDOO8pYKz2kIEyPoJEZW3pn6oHrtARdewwttGkVS18gaf1380kC7LpFltrTNKO2FXCZJ5bPX8Ruq9k0LexXudcjaf9I', // Your FCM server key
-      },
-      body: jsonEncode(
-        <String, dynamic>{
-          'notification': <String, dynamic>{
-            'body': '',
-            'title': 'Responder is On The Way!!!',
-            'android_channel_id': 'your_channel_id', // Required for Android 8.0 and above
-            'alert': 'standard', // Set to 'standard' to show a dialog box
-          },
-          'priority': 'high',
-          'data': <String, dynamic>{
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            'screen': 'dialog_box', // Screen to open in receiver app
-          },
-          'to': responderFCMToken, // Receiver's FCM token
+  void sendNotification() async {
+    // Check if nearestFCMToken is not null before sending the notification
+    if (responderFCMToken != null) {
+      final uri = Uri.parse('https://fcm.googleapis.com/fcm/send');
+      await http.post(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+              'key=AAAApeeRKFQ:APA91bG2STzaKtq-pwEZQA6nAdzkbFwGqz80bvaF-wM4I1uQIIDOO8pYKz2kIEyPoJEZW3pn6oHrtARdewwttGkVS18gaf1380kC7LpFltrTNKO2FXCZJ5bPX8Ruq9k0LexXudcjaf9I', // Your FCM server key
         },
-      ),
-    );
-  } else {
-    print('Nearest responder FCM token is null. Cannot send notification.');
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'body': '',
+              'title': 'Responder is On The Way!!!',
+              'android_channel_id':
+                  'your_channel_id', // Required for Android 8.0 and above
+              'alert': 'standard', // Set to 'standard' to show a dialog box
+            },
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'screen': 'dialog_box', // Screen to open in receiver app
+            },
+            'to': responderFCMToken, // Receiver's FCM token
+          },
+        ),
+      );
+    } else {
+      print('Nearest responder FCM token is null. Cannot send notification.');
+    }
   }
-}
 
+  void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
+    // Handle notification click here
+    Future.delayed(const Duration(seconds: 2), () {
+      showDialogBox(context!);
+    });
+  }
 
-
-void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
-  // Handle notification click here
-  Future.delayed(const Duration(seconds: 2), () {
-    showDialogBox(context!);
-    
-  });
-}
-
-
-Future<void> vibrate() async {
+  Future<void> vibrate() async {
     // Check if the device supports vibration
     bool? hasVibrator = await Vibration.hasVibrator();
     if (hasVibrator != null && hasVibrator) {
@@ -118,251 +113,277 @@ Future<void> vibrate() async {
     }
   }
 
-Future<void> fetchData() async {
-  try {
-    // First, fetch user ID
-    await fetchUserIdFromUserNeededHelp();
+  Future<void> fetchData() async {
+    try {
+      // First, fetch user ID
+      await fetchUserIdFromUserNeededHelp();
 
-    // Then, fetch user name using the fetched user ID
-     userName = await fetchUserDetails();
-    
-    // Now you can use userName or perform any other actions with the fetched data
-    if (userName != null) {
-    } else {
-      print('User name not found.');
-    }
-  } catch (e) {
-    print('Error fetching data: $e');
-  }
-}
+      // Then, fetch user name using the fetched user ID
+      userName = await fetchUserDetails();
 
-
-Future<void> fetchUserIdFromUserNeededHelp() async {
-  try {
-    // Get a reference to the "responder" collection
-    CollectionReference responderCollection = FirebaseFirestore.instance.collection('responder');
-
-    // Get a reference to the document within the "responder" collection
-    DocumentReference docRef = responderCollection.doc(user.uid);
-
-    // Get a reference to the "userNeededHelp" subcollection
-    CollectionReference userNeededHelpCollection = docRef.collection('userNeededHelp');
-
-    // Query documents ordered by timestamp in descending order (most recent first) and limit the result to 1
-    QuerySnapshot querySnapshot = await userNeededHelpCollection.orderBy('timestamp', descending: true).limit(1).get();
-
-    // Check if there are any documents returned
-    if (querySnapshot.docs.isNotEmpty) {
-      // Access the first document and get the "userId" field
-      userNeededHelpUid = querySnapshot.docs.first.get('userId');
-      print('User ID: $userNeededHelpUid');
-    } else {
-      print('No documents found in the "userNeededHelp" subcollection.');
-    }
-  } catch (e) {
-    print('Error fetching user ID: $e');
-  }
-}
-
-
-Future<String?> fetchUserDetails() async {
-  try {
-    // Get a reference to the "user" collection
-    CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
-
-    // Get a reference to the document within the "user" collection
-    DocumentSnapshot docSnapshot = await userCollection.doc(userNeededHelpUid).get();
-
-    // Check if the document exists
-    if (docSnapshot.exists) {
-      // Retrieve other fields as you were doing before
-      dateAndTime = docSnapshot.get('timestamp');
-      userName = docSnapshot.get('name');
-      phoneNum = docSnapshot.get('phonenumber');
-      responderFCMToken = docSnapshot.get('fcmToken');
-      userLatitude = docSnapshot.get('latitude');
-      userLongitude = docSnapshot.get('longitude');
-
-      // Handle the array field userConcern
-      List<dynamic>? userConcernList = docSnapshot.get('concerns');
-      if (userConcernList != null) {
-        // Join concerns into a single string
-        userConcern = userConcernList.join(', ');
+      // Now you can use userName or perform any other actions with the fetched data
+      if (userName != null) {
       } else {
-        userConcern = ''; // or any default value if null is not acceptable
+        print('User name not found.');
       }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
 
-      // Convert the Timestamp to a DateTime and format it
-      DateTime dateTime = dateAndTime!.toDate();
-      formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
+  Future<void> fetchUserIdFromUserNeededHelp() async {
+    try {
+      // Get a reference to the "responder" collection
+      CollectionReference responderCollection =
+          FirebaseFirestore.instance.collection('responder');
 
-      return userName;
-    } else {
-      print('Document does not exist in the "user" collection.');
+      // Get a reference to the document within the "responder" collection
+      DocumentReference docRef = responderCollection.doc(user.uid);
+
+      // Get a reference to the "userNeededHelp" subcollection
+      CollectionReference userNeededHelpCollection =
+          docRef.collection('userNeededHelp');
+
+      // Query documents ordered by timestamp in descending order (most recent first) and limit the result to 1
+      QuerySnapshot querySnapshot = await userNeededHelpCollection
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      // Check if there are any documents returned
+      if (querySnapshot.docs.isNotEmpty) {
+        // Access the first document and get the "userId" field
+        userNeededHelpUid = querySnapshot.docs.first.get('userId');
+        print('User ID: $userNeededHelpUid');
+      } else {
+        print('No documents found in the "userNeededHelp" subcollection.');
+      }
+    } catch (e) {
+      print('Error fetching user ID: $e');
+    }
+  }
+
+  Future<QuerySnapshot<Object?>> fetchEmergencyHistory() async {
+    QuerySnapshot<Object?> querySnapshot =
+        await FirebaseFirestore.instance.collection('Emergency History').get();
+    return querySnapshot;
+  }
+
+  Future<void> storeEmergencyHistory() async {
+    try {
+      // Get a reference to the "Emergency History" collection
+      CollectionReference emergencyHistoryCollection =
+          FirebaseFirestore.instance.collection('Emergency History');
+
+      // Create a new document in the "Emergency History" collection with a generated document ID
+      await emergencyHistoryCollection.add({
+        'userName': userName,
+        'phoneNum': phoneNum,
+        'userImage': userImage,
+        'responderFCMToken': responderFCMToken,
+        'userLatitude': userLatitude,
+        'userLongitude': userLongitude,
+        'formattedDateAndTime': formattedDateAndTime,
+        'userConcern': userConcern,
+        // Add any other fields you want to store in the emergency history
+      });
+
+      print('Emergency history stored successfully.');
+    } catch (e) {
+      print('Error storing emergency history: $e');
+    }
+  }
+
+  Future<String?> fetchUserDetails() async {
+    try {
+      // Get a reference to the "user" collection
+      CollectionReference userCollection =
+          FirebaseFirestore.instance.collection('users');
+
+      // Get a reference to the document within the "user" collection
+      DocumentSnapshot docSnapshot =
+          await userCollection.doc(userNeededHelpUid).get();
+
+      // Check if the document exists
+      if (docSnapshot.exists) {
+        // Retrieve other fields as you were doing before
+        dateAndTime = docSnapshot.get('timestamp');
+        userName = docSnapshot.get('name');
+        phoneNum = docSnapshot.get('phonenumber');
+        userImage = docSnapshot.get('image');
+        responderFCMToken = docSnapshot.get('fcmToken');
+        userLatitude = docSnapshot.get('latitude');
+        userLongitude = docSnapshot.get('longitude');
+
+        // Handle the array field userConcern
+        List<dynamic>? userConcernList = docSnapshot.get('concerns');
+        if (userConcernList != null) {
+          // Join concerns into a single string
+          userConcern = userConcernList.join(', ');
+        } else {
+          userConcern = ''; // or any default value if null is not acceptable
+        }
+
+        // Convert the Timestamp to a DateTime and format it
+        DateTime dateTime = dateAndTime!.toDate();
+        formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
+
+        return userName;
+      } else {
+        print('Document does not exist in the "user" collection.');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user details: $e');
       return null;
     }
-  } catch (e) {
-    print('Error fetching user details: $e');
-    return null;
   }
-}
 
-
-
-
-Future<void> _openGoogleMaps(userLatitude, userLongitude) async {
-  String googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$userLatitude,$userLongitude';
-  await launch(googleMapsUrl);
-}
-
-
-launchDialer(String number) async {
-  String url = 'tel:' + number;
-  if (await canLaunch(url)) {
-    await launch(url);
-  } else {
-    throw 'Application unable to open dialer.';
+  Future<void> _openGoogleMaps(userLatitude, userLongitude) async {
+    String googleMapsUrl =
+        'https://www.google.com/maps/search/?api=1&query=$userLatitude,$userLongitude';
+    await launch(googleMapsUrl);
   }
-}
 
+  launchDialer(String number) async {
+    String url = 'tel:' + number;
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Application unable to open dialer.';
+    }
+  }
 
-void showDialogBox(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("User Information"),
-        content: SingleChildScrollView( // Wrap content with SingleChildScrollView
-          scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Patient Name: $userName'),
-              Text('User is need of: $userConcern'),
-              Text('Phone Number: $phoneNum'),
-              Text('Date: $formattedDateAndTime'),
-              
-
-            ],
+  void showDialogBox(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("User Information"),
+          content: SingleChildScrollView(
+            // Wrap content with SingleChildScrollView
+            scrollDirection:
+                Axis.horizontal, // Set scroll direction to horizontal
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (userImage != null) // Check if the image is fetched
+                  GestureDetector(
+                    onTap: () {
+                      // Show full-size image when tapped
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            content: Image.network(
+                              userImage!, // Use fetched image URL
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text("Close"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Image.network(
+                      userImage!, // Use fetched image URL
+                      width: 100, // Adjust width as needed
+                      height: 100, // Adjust height as needed
+                    ),
+                  ),
+                Text('Patient Name: $userName'),
+                Text('User is need of: $userConcern'),
+                Text('Phone Number: $phoneNum'),
+                Text('Date: $formattedDateAndTime'),
+              ],
+            ),
           ),
-        ),
-        actions: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: 110,
-                child: ElevatedButton(
-                  onPressed: () {
-                    launchDialer(phoneNum!);
-                  },
-                  child: Text("Call"),
+          actions: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: 110,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      launchDialer(phoneNum!);
+                    },
+                    child: Text("Call"),
+                  ),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                      _openGoogleMaps(userLatitude, userLongitude);
-                       sendNotification();
-                      },
-                child: Text("Navigate"),
-              ),
-              
-            ],
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
-
+                ElevatedButton(
+                  onPressed: () {
+                    _openGoogleMaps(userLatitude, userLongitude);
+                    sendNotification();
+                    storeEmergencyHistory();
+                  },
+                  child: Text("Navigate"),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   init() async {
-  setBusy(true);
-  user = (await _sharedPref.getCurrentUser())!;
-  streamSubscription?.cancel();
-  streamSubscription = _sharedPref.userStream.listen((userData) {
-    if (userData != null) {
-      user = userData;
-      rebuildUi();
-    }
-  });
-
-  // Fetch data here
+    setBusy(true);
+    user = (await _sharedPref.getCurrentUser())!;
+    streamSubscription?.cancel();
+    streamSubscription = _sharedPref.userStream.listen((userData) {
+      if (userData != null) {
+        user = userData;
+        rebuildUi();
+      }
+    });
     timer = Timer.periodic(
-        const Duration(seconds: 2), (Timer t) => fetchData());
+        const Duration(seconds: 20), (Timer t) => storeCurrentLocationOfUser());
+    // Fetch data here
+    timer =
+        Timer.periodic(const Duration(seconds: 2), (Timer t) => fetchData());
 
-//    // Set foreground notification presentation options
-//   await firebaseMessaging.setForegroundNotificationPresentationOptions(
-//     alert: true,
-//     badge: true,
-//     sound: true,
-//   );
+    FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
 
-//   // Listen for incoming messages
-//   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-//     // Handle foreground messages
-//     if (message.notification != null) {
-//       // Handle notification payload when app is in the foreground
-//       onNotificationClicked(message.data, context!);
-//       vibrate();
-//     }
-//   });
+    // Set foreground notification presentation options
+    FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
 
-//   // Listen for notification clicks when app is in the background
-//   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-//     // Handle notification payload when app is in the background
-//     onNotificationClicked(message.data, context!);
-//     vibrate();
-//   });
-// }
+    // Listen for incoming messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Handle foreground messages
+      if (message.notification != null) {
+        // Handle notification payload when app is in the foreground
+        onNotificationClicked(message.data, true);
+        vibrate();
+      }
+    });
 
-// Future<void> _handleBackgroundMessage(RemoteMessage message) async {
-//   if (message.notification != null) {
-//     // Handle notification payload when app is completely closed
-//     onNotificationClicked(message.data, context!);
-//     vibrate();
-//   }
+    // Listen for notification clicks when app is in the background
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle notification payload when app is in the background
+      onNotificationClicked(message.data, true);
+      vibrate();
+    });
+    setBusy(false);
+  }
 
-
- FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
-
-  // Set foreground notification presentation options
-  FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
-
-  // Listen for incoming messages
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    // Handle foreground messages
+  Future<void> _handleBackgroundMessage(RemoteMessage message) async {
     if (message.notification != null) {
-      // Handle notification payload when app is in the foreground
+      // Handle notification payload when app is completely closed
       onNotificationClicked(message.data, true);
       vibrate();
     }
-  });
-
-  // Listen for notification clicks when app is in the background
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    // Handle notification payload when app is in the background
-    onNotificationClicked(message.data, true);
-    vibrate();
-  });
-  setBusy(false);
-}
-
-
-Future<void> _handleBackgroundMessage(RemoteMessage message) async {
-  if (message.notification != null) {
-    // Handle notification payload when app is completely closed
-    onNotificationClicked(message.data, true);
-    vibrate();
   }
-}
 
   Future<void> storeCurrentLocationOfUser() async {
     setBusy(true);
@@ -393,12 +414,9 @@ Future<void> _handleBackgroundMessage(RemoteMessage message) async {
     controllerGoogleMap!
         .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     setBusy(false);
-    
   }
 
-  void initState() {
-   
-  }
+  void initState() {}
 
   void updateMapTheme(GoogleMapController controller) {
     getJsonFileFromThemes("themes/night_style.json")
@@ -422,8 +440,7 @@ Future<void> _handleBackgroundMessage(RemoteMessage message) async {
     updateMapTheme(controllerGoogleMap!);
     timer = Timer.periodic(
         const Duration(seconds: 20), (Timer t) => storeCurrentLocationOfUser());
-        // fetchData();
-      
+    // fetchData();
   }
 
   void goToProfileView() {

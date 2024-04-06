@@ -49,7 +49,7 @@ class UserProfile extends StatelessWidget {
                 ),
               ),
               Text(
-                'Normal User',
+                'Responder',
                 style: TextStyle(
                   color: AppColor.secondaryColor,
                   fontWeight: FontWeight.bold,

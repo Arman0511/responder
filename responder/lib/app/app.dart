@@ -19,6 +19,14 @@ import 'package:responder/ui/dialogs/update_password/update_password_dialog.dart
 import 'package:responder/ui/bottom_sheets/input_validation/input_validation_sheet.dart';
 import 'package:responder/services/firebase_messaging_sevice_service.dart';
 import 'package:responder/services/notification_service.dart';
+import 'package:responder/services/user_service.dart';
+import 'package:responder/services/internet_service.dart';
+import 'package:responder/services/image_service.dart';
+import 'package:responder/ui/views/admin/admin_view.dart';
+import 'package:responder/ui/dialogs/admin_login/admin_login_dialog.dart';
+import 'package:responder/ui/views/admin_signup/admin_signup_view.dart';
+import 'package:responder/ui/views/admin_signup/admin_signup_view.dart';
+import 'package:responder/ui/views/admin_profile/admin_profile_view.dart';
 // @stacked-import
 
 @StackedApp(
@@ -30,6 +38,10 @@ import 'package:responder/services/notification_service.dart';
     MaterialRoute(page: ForgotPasswordViewView),
     MaterialRoute(page: ProfileViewView),
 
+    MaterialRoute(page: AdminView),
+    MaterialRoute(page: AdminSignupView),
+    MaterialRoute(page: AdminSignupView),
+    MaterialRoute(page: AdminProfileView),
 // @stacked-route
   ],
   dependencies: [
@@ -41,6 +53,9 @@ import 'package:responder/services/notification_service.dart';
     LazySingleton(classType: SharedPreferenceService),
     LazySingleton(classType: FirebaseMessagingSeviceService),
     LazySingleton(classType: NotificationService),
+    LazySingleton(classType: UserService),
+    LazySingleton(classType: InternetService),
+    LazySingleton(classType: ImageService),
 // @stacked-service
   ],
   bottomsheets: [
@@ -54,6 +69,7 @@ import 'package:responder/services/notification_service.dart';
     StackedDialog(classType: UpdateNameDialog),
     StackedDialog(classType: UpdateEmailDialog),
     StackedDialog(classType: UpdatePasswordDialog),
+    StackedDialog(classType: AdminLoginDialog),
 // @stacked-dialog
   ],
 )

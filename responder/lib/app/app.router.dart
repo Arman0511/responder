@@ -5,17 +5,21 @@
 // **************************************************************************
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:flutter/material.dart' as _i10;
+import 'package:flutter/material.dart' as _i11;
 import 'package:flutter/material.dart';
+import 'package:responder/ui/views/admin/admin_view.dart' as _i8;
+import 'package:responder/ui/views/admin_profile/admin_profile_view.dart'
+    as _i10;
+import 'package:responder/ui/views/admin_signup/admin_signup_view.dart' as _i9;
 import 'package:responder/ui/views/forgot_password_view/forgot_password_view_view.dart'
-    as _i8;
+    as _i6;
 import 'package:responder/ui/views/home/home_view.dart' as _i2;
 import 'package:responder/ui/views/login/login_view.dart' as _i4;
-import 'package:responder/ui/views/profile_view/profile_view_view.dart' as _i9;
+import 'package:responder/ui/views/profile_view/profile_view_view.dart' as _i7;
 import 'package:responder/ui/views/startup/startup_view.dart' as _i3;
-import 'package:responder/ui/views/user_sign_up/user_sign_up_view.dart' as _i6;
+import 'package:responder/ui/views/user_sign_up/user_sign_up_view.dart' as _i5;
 import 'package:stacked/stacked.dart' as _i1;
-import 'package:stacked_services/stacked_services.dart' as _i11;
+import 'package:stacked_services/stacked_services.dart' as _i12;
 
 class Routes {
   static const homeView = '/home-view';
@@ -24,25 +28,29 @@ class Routes {
 
   static const loginView = '/login-view';
 
-  static const responderHomepageView = '/responder-homepage-view';
-
   static const userSignUpView = '/user-sign-up-view';
-
-  static const messageViewView = '/message-view-view';
 
   static const forgotPasswordViewView = '/forgot-password-view-view';
 
   static const profileViewView = '/profile-view-view';
 
+  static const adminView = '/admin-view';
+
+  static const adminSignupView = '/admin-signup-view';
+
+
+  static const adminProfileView = '/admin-profile-view';
+
   static const all = <String>{
     homeView,
     startupView,
     loginView,
-    responderHomepageView,
     userSignUpView,
-    messageViewView,
     forgotPasswordViewView,
     profileViewView,
+    adminView,
+    adminSignupView,
+    adminProfileView,
   };
 }
 
@@ -62,54 +70,86 @@ class StackedRouter extends _i1.RouterBase {
     ),
     _i1.RouteDef(
       Routes.userSignUpView,
-      page: _i6.UserSignUpView,
+      page: _i5.UserSignUpView,
     ),
-  
     _i1.RouteDef(
       Routes.forgotPasswordViewView,
-      page: _i8.ForgotPasswordViewView,
+      page: _i6.ForgotPasswordViewView,
     ),
     _i1.RouteDef(
       Routes.profileViewView,
-      page: _i9.ProfileViewView,
+      page: _i7.ProfileViewView,
+    ),
+    _i1.RouteDef(
+      Routes.adminView,
+      page: _i8.AdminView,
+    ),
+    _i1.RouteDef(
+      Routes.adminSignupView,
+      page: _i9.AdminSignupView,
+    ),
+    _i1.RouteDef(
+      Routes.adminSignupView,
+      page: _i9.AdminSignupView,
+    ),
+    _i1.RouteDef(
+      Routes.adminProfileView,
+      page: _i10.AdminProfileView,
     ),
   ];
 
   final _pagesMap = <Type, _i1.StackedRouteFactory>{
     _i2.HomeView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
+      return _i11.MaterialPageRoute<dynamic>(
         builder: (context) => const _i2.HomeView(),
         settings: data,
       );
     },
     _i3.StartupView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
+      return _i11.MaterialPageRoute<dynamic>(
         builder: (context) => const _i3.StartupView(),
         settings: data,
       );
     },
     _i4.LoginView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
+      return _i11.MaterialPageRoute<dynamic>(
         builder: (context) => const _i4.LoginView(),
         settings: data,
       );
     },
-   
-    _i6.UserSignUpView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i6.UserSignUpView(),
+    _i5.UserSignUpView: (data) {
+      return _i11.MaterialPageRoute<dynamic>(
+        builder: (context) => const _i5.UserSignUpView(),
         settings: data,
       );
     },
-    _i8.ForgotPasswordViewView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i8.ForgotPasswordViewView(),
+    _i6.ForgotPasswordViewView: (data) {
+      return _i11.MaterialPageRoute<dynamic>(
+        builder: (context) => const _i6.ForgotPasswordViewView(),
         settings: data,
       );
     },
-    _i9.ProfileViewView: (data) {
-      return _i10.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i9.ProfileViewView(),
+    _i7.ProfileViewView: (data) {
+      return _i11.MaterialPageRoute<dynamic>(
+        builder: (context) => const _i7.ProfileViewView(),
+        settings: data,
+      );
+    },
+    _i8.AdminView: (data) {
+      return _i11.MaterialPageRoute<dynamic>(
+        builder: (context) => const _i8.AdminView(),
+        settings: data,
+      );
+    },
+    _i9.AdminSignupView: (data) {
+      return _i11.MaterialPageRoute<dynamic>(
+        builder: (context) => const _i9.AdminSignupView(),
+        settings: data,
+      );
+    },
+    _i10.AdminProfileView: (data) {
+      return _i11.MaterialPageRoute<dynamic>(
+        builder: (context) => const _i10.AdminProfileView(),
         settings: data,
       );
     },
@@ -122,7 +162,7 @@ class StackedRouter extends _i1.RouterBase {
   Map<Type, _i1.StackedRouteFactory> get pagesMap => _pagesMap;
 }
 
-extension NavigatorStateExtension on _i11.NavigationService {
+extension NavigatorStateExtension on _i12.NavigationService {
   Future<dynamic> navigateToHomeView([
     int? routerId,
     bool preventDuplicates = true,
@@ -165,20 +205,6 @@ extension NavigatorStateExtension on _i11.NavigationService {
         transition: transition);
   }
 
-  Future<dynamic> navigateToResponderHomepageView([
-    int? routerId,
-    bool preventDuplicates = true,
-    Map<String, String>? parameters,
-    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
-        transition,
-  ]) async {
-    return navigateTo<dynamic>(Routes.responderHomepageView,
-        id: routerId,
-        preventDuplicates: preventDuplicates,
-        parameters: parameters,
-        transition: transition);
-  }
-
   Future<dynamic> navigateToUserSignUpView([
     int? routerId,
     bool preventDuplicates = true,
@@ -187,20 +213,6 @@ extension NavigatorStateExtension on _i11.NavigationService {
         transition,
   ]) async {
     return navigateTo<dynamic>(Routes.userSignUpView,
-        id: routerId,
-        preventDuplicates: preventDuplicates,
-        parameters: parameters,
-        transition: transition);
-  }
-
-  Future<dynamic> navigateToMessageViewView([
-    int? routerId,
-    bool preventDuplicates = true,
-    Map<String, String>? parameters,
-    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
-        transition,
-  ]) async {
-    return navigateTo<dynamic>(Routes.messageViewView,
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,
@@ -229,6 +241,48 @@ extension NavigatorStateExtension on _i11.NavigationService {
         transition,
   ]) async {
     return navigateTo<dynamic>(Routes.profileViewView,
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> navigateToAdminView([
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  ]) async {
+    return navigateTo<dynamic>(Routes.adminView,
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> navigateToAdminSignupView([
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  ]) async {
+    return navigateTo<dynamic>(Routes.adminSignupView,
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> navigateToAdminProfileView([
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  ]) async {
+    return navigateTo<dynamic>(Routes.adminProfileView,
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,
@@ -277,20 +331,6 @@ extension NavigatorStateExtension on _i11.NavigationService {
         transition: transition);
   }
 
-  Future<dynamic> replaceWithResponderHomepageView([
-    int? routerId,
-    bool preventDuplicates = true,
-    Map<String, String>? parameters,
-    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
-        transition,
-  ]) async {
-    return replaceWith<dynamic>(Routes.responderHomepageView,
-        id: routerId,
-        preventDuplicates: preventDuplicates,
-        parameters: parameters,
-        transition: transition);
-  }
-
   Future<dynamic> replaceWithUserSignUpView([
     int? routerId,
     bool preventDuplicates = true,
@@ -299,20 +339,6 @@ extension NavigatorStateExtension on _i11.NavigationService {
         transition,
   ]) async {
     return replaceWith<dynamic>(Routes.userSignUpView,
-        id: routerId,
-        preventDuplicates: preventDuplicates,
-        parameters: parameters,
-        transition: transition);
-  }
-
-  Future<dynamic> replaceWithMessageViewView([
-    int? routerId,
-    bool preventDuplicates = true,
-    Map<String, String>? parameters,
-    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
-        transition,
-  ]) async {
-    return replaceWith<dynamic>(Routes.messageViewView,
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,
@@ -341,6 +367,48 @@ extension NavigatorStateExtension on _i11.NavigationService {
         transition,
   ]) async {
     return replaceWith<dynamic>(Routes.profileViewView,
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> replaceWithAdminView([
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  ]) async {
+    return replaceWith<dynamic>(Routes.adminView,
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> replaceWithAdminSignupView([
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  ]) async {
+    return replaceWith<dynamic>(Routes.adminSignupView,
+        id: routerId,
+        preventDuplicates: preventDuplicates,
+        parameters: parameters,
+        transition: transition);
+  }
+
+  Future<dynamic> replaceWithAdminProfileView([
+    int? routerId,
+    bool preventDuplicates = true,
+    Map<String, String>? parameters,
+    Widget Function(BuildContext, Animation<double>, Animation<double>, Widget)?
+        transition,
+  ]) async {
+    return replaceWith<dynamic>(Routes.adminProfileView,
         id: routerId,
         preventDuplicates: preventDuplicates,
         parameters: parameters,
