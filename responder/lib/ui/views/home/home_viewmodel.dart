@@ -108,7 +108,7 @@ class HomeViewModel extends BaseViewModel {
           <String, dynamic>{
             'notification': <String, dynamic>{
               'body': '',
-              'title': 'Responder is On The Way!!!',
+              'title': 'Responder Arrived in the Destination',
               'android_channel_id':
                   'your_channel_id', // Required for Android 8.0 and above
               'alert': 'standard', // Set to 'standard' to show a dialog box
@@ -118,7 +118,7 @@ class HomeViewModel extends BaseViewModel {
               'click_action': 'FLUTTER_NOTIFICATION_CLICK',
               'screen': 'dialog_box', // Screen to open in receiver app
             },
-            'to': responderFCMToken, // Receiver's FCM token
+            'to': 'chbBHXMYRB6aroOJyJcF3l:APA91bHb9EfTwCFrHc9LQfzY5qv-B2FymgPrhdOheH4hjRAyZN2E3Yp5UJD4HDKYyyjbRN3l3tGOm2N__FFsq_y5Lo8H1i18xqN13fl6eWrkMTss4xyQQEIpo_PXzQ8sdu5nK15tMlPa', // Receiver's FCM token
           },
         ),
       );

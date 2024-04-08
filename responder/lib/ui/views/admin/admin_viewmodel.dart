@@ -511,7 +511,6 @@ Future<void> vibrate() async {
     controllerGoogleMap = mapController;
     googleMapCompleterController.complete(controllerGoogleMap);
     updateMapTheme(controllerGoogleMap!);
- _getLocationDataOf1kmRadius();
    }
 
   void updateMapTheme(GoogleMapController controller) {
