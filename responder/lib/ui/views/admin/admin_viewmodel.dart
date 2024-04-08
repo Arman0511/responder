@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:responder/app/app.locator.dart';
 import 'package:responder/app/app.router.dart';
 import 'package:responder/model/admin.dart';
@@ -23,17 +24,35 @@ class AdminViewModel extends BaseViewModel {
   final _sharedPref = locator<SharedPreferenceService>();
 
   late Admin admin;
-  late Timer timer;
+late Timer fetchDataTimer;
   final Map<MarkerId, Marker> _markers = {};
+  Map<MarkerId, Marker> get markers => _markers;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String? nearestFCMToken;
   String? nearestUID;
   String? userNeededHelpUid;
+  String? nearestResponderUid;
+
+Timestamp? responderdateAndTime;
+String? responderformattedDAndT;
+  String? responderuserName;
+  String? responderformattedDateAndTime;
+  String? responderphoneNum;
+  String? responderFCMToken;
+  String? responderuserConcern;
+  String? responderuserImage;
+  double? responderuserLatitude;
+  double? responderuserLongitude;
+
+
+
+
   Timestamp? dateAndTime;
   String? userName;
   String? formattedDateAndTime;
   String? phoneNum;
-  String? responderFCMToken;
+  String? userFCMToken;
   String? userConcern;
   String? userImage;
   double? userLatitude;
@@ -48,13 +67,15 @@ class AdminViewModel extends BaseViewModel {
   GoogleMapController? controllerGoogleMap;
   StreamSubscription<Admin?>? streamSubscription;
 
+
   Future<QuerySnapshot<Object?>> fetchEmergencyHistory() async {
     QuerySnapshot<Object?> querySnapshot =
         await FirebaseFirestore.instance.collection('Emergency History').get();
     return querySnapshot;
   }
 
-  Future<void> _getLocationDataOf1kmRadius() async {
+
+Future<void> _getLocationDataOf1kmRadius() async {
     setBusy(true);
 
     // Get the user's current location
@@ -80,6 +101,7 @@ class AdminViewModel extends BaseViewModel {
         in querySnapshot.docs) {
       double latitude = documentSnapshot.data()['latitude'];
       double longitude = documentSnapshot.data()['longitude'];
+      String name = documentSnapshot.data()['name'];
       double distance = Geolocator.distanceBetween(positionOfUser.latitude,
           positionOfUser.longitude, latitude, longitude);
 
@@ -90,8 +112,8 @@ class AdminViewModel extends BaseViewModel {
         Marker marker = Marker(
           markerId: markerId,
           position: LatLng(latitude, longitude),
-          infoWindow: const InfoWindow(
-            title: 'Responder',
+          infoWindow:InfoWindow(
+            title: name,
           ),
         );
         _markers[markerId] = marker;
@@ -127,6 +149,176 @@ class AdminViewModel extends BaseViewModel {
     setBusy(false);
   }
 
+
+    
+    Future<void> fetchData() async {
+  try {
+    // First, fetch user ID
+    await fetchUserIdFromUserNeededHelp();
+
+    // Then, fetch user name using the fetched user ID
+    await fetchUserDetails();
+
+    // Fetch responder details
+    await fetchResponderDetails();
+
+    // Fetch location data within 1km radius
+    // await _getLocationDataOf1kmRadius();
+
+    // Print statement to indicate that the process is complete
+    print('Location data processing is complete');
+
+    setBusy(false);
+  } catch (e) {
+    print('Error fetching data: $e');
+  }
+}
+
+ Future<String?> fetchResponderDetails() async{
+     try {
+      // Get a reference to the "user" collection
+      CollectionReference responderCollection =
+          FirebaseFirestore.instance.collection('responder');
+
+    // Get a reference to the document within the "user" collection
+      DocumentSnapshot docSnapshot =
+          await responderCollection.doc(nearestResponderUid).get();
+
+          if (docSnapshot.exists) {
+        // Retrieve other fields as you were doing before
+        responderdateAndTime = docSnapshot.get('timestamp');
+        responderuserName = docSnapshot.get('name');
+        responderphoneNum = docSnapshot.get('phonenumber');
+        responderuserImage = docSnapshot.get('image');
+        responderFCMToken = docSnapshot.get('fcmToken');
+        responderuserLatitude = docSnapshot.get('latitude');
+        responderuserLongitude = docSnapshot.get('longitude');
+
+        // Convert the Timestamp to a DateTime and format it
+        DateTime dateTime = responderdateAndTime!.toDate();
+        responderformattedDAndT = DateFormat.yMd().add_jm().format(dateTime);
+           
+       print('Responder Name: $responderuserName');
+
+        return responderuserName;
+      } else {
+        print('Document does not exist in the "responder" collection.');
+        return null;
+      }
+     }catch (e) {
+      print('Error fetching user details: $e');
+      return null;
+
+ }}
+
+    Future<String?> fetchUserDetails() async {
+  try {
+    // Get a reference to the "user" collection
+    CollectionReference userCollection =
+        FirebaseFirestore.instance.collection('users');
+
+    // Get a reference to the document within the "user" collection
+    DocumentSnapshot docSnapshot =
+        await userCollection.doc(userNeededHelpUid).get();
+
+    // Check if the document exists
+    if (docSnapshot.exists) {
+      // Retrieve other fields as you were doing before
+      dateAndTime = docSnapshot.get('timestamp');
+      userName = docSnapshot.get('name');
+      phoneNum = docSnapshot.get('phonenumber');
+      userImage = docSnapshot.get('image');
+      userFCMToken = docSnapshot.get('fcmToken');
+      userLatitude = docSnapshot.get('latitude');
+      userLongitude = docSnapshot.get('longitude');
+
+      // Create a unique string identifier for the marker
+      String markerIdValue = 'user_$userNeededHelpUid';
+      MarkerId markerId = MarkerId(markerIdValue);
+      Marker marker = Marker(
+        markerId: markerId,
+        position: LatLng(userLatitude!, userLongitude!),
+        infoWindow: InfoWindow(
+          title: userName,
+        ),
+      );
+      _markers[markerId] = marker;
+
+      // Handle the array field userConcern
+      List<dynamic>? userConcernList = docSnapshot.get('concerns');
+      if (userConcernList!= null) {
+        // Join concerns into a single string
+        userConcern = userConcernList.join(', ');
+      } else {
+        userConcern = ''; // or any default value if null is not acceptable
+      }
+
+      // Convert the Timestamp to a DateTime and format it
+      DateTime dateTime = dateAndTime!.toDate();
+      formattedDateAndTime = DateFormat.yMd().add_jm().format(dateTime);
+
+      // Print the userName
+      print('User Name: $userName');
+
+      return userName;
+    } else {
+      print('Document does not exist in the "user" collection.');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching user details: $e');
+  }
+  return null;
+}
+
+
+
+    Future<void> fetchUserIdFromUserNeededHelp() async {
+    try {
+      // Get a reference to the "responder" collection
+      CollectionReference adminCollection =
+          FirebaseFirestore.instance.collection('admin');
+
+      // Get a reference to the document within the "responder" collection
+      DocumentReference docRef = adminCollection.doc(admin.uid);
+
+      // Get a reference to the "userNeededHelp" subcollection
+      CollectionReference userNeededHelpCollection =
+          docRef.collection('userNeededHelp');
+ CollectionReference nearestResponderCollection =
+          docRef.collection('nearestResponder');
+
+      // Query documents ordered by timestamp in descending order (most recent first) and limit the result to 1
+      QuerySnapshot querySnapshot = await userNeededHelpCollection
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get(); 
+      QuerySnapshot querySnapshotResponder = await nearestResponderCollection
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      // Check if there are any documents returned
+      if (querySnapshot.docs.isNotEmpty) {
+        // Access the first document and get the "userId" field
+        userNeededHelpUid = querySnapshot.docs.first.get('userId');
+        print('User ID: $userNeededHelpUid');
+      } 
+       if (querySnapshotResponder.docs.isNotEmpty) {
+        // Access the first document and get the "userId" field
+        nearestResponderUid = querySnapshotResponder.docs.first.get('userId');
+        print('User ID: $nearestResponderUid');
+      } else {
+        print('No documents found in the "userNeededHelp" subcollection.');
+      }
+    } catch (e) {
+      print('Error fetching user ID: $e');
+    }
+  }
+
+ 
+  
+
   void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
     // Handle notification click here
     Future.delayed(const Duration(seconds: 2), () {
@@ -148,7 +340,7 @@ class AdminViewModel extends BaseViewModel {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (userImage != null) // Check if the image is fetched
+                if (responderuserImage != null) // Check if the image is fetched
                   GestureDetector(
                     onTap: () {
                       // Show full-size image when tapped
@@ -157,7 +349,7 @@ class AdminViewModel extends BaseViewModel {
                         builder: (BuildContext context) {
                           return AlertDialog(
                             content: Image.network(
-                              userImage!, // Use fetched image URL
+                              responderuserImage!, // Use fetched image URL
                             ),
                             actions: [
                               ElevatedButton(
@@ -172,15 +364,14 @@ class AdminViewModel extends BaseViewModel {
                       );
                     },
                     child: Image.network(
-                      userImage!, // Use fetched image URL
+                      responderuserImage!, // Use fetched image URL
                       width: 100, // Adjust width as needed
                       height: 100, // Adjust height as needed
                     ),
                   ),
-                Text('Patient Name: $userName'),
-                Text('User is need of: $userConcern'),
-                Text('Phone Number: $phoneNum'),
-                Text('Date: $formattedDateAndTime'),
+                Text('Responder Name: $responderuserName'),
+                Text('Phone Number: $responderphoneNum'),
+                Text('Date: $responderformattedDateAndTime'),
               ],
             ),
           ),
@@ -252,10 +443,7 @@ Future<void> vibrate() async {
       }
     });
 
-    // // Fetch data here
-    // timer =
-    //     Timer.periodic(const Duration(seconds: 2), (Timer t) => fetchData());
-
+      await fetchData();
     FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
 
     // Set foreground notification presentation options
@@ -271,6 +459,7 @@ Future<void> vibrate() async {
       if (message.notification != null) {
         // Handle notification payload when app is in the foreground
         onNotificationClicked(message.data, true);
+        fetchData();
         vibrate();
       }
     });
@@ -279,6 +468,7 @@ Future<void> vibrate() async {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       // Handle notification payload when app is in the background
       onNotificationClicked(message.data, true);
+      fetchData();
       vibrate();
     });
     setBusy(false);
@@ -288,6 +478,7 @@ Future<void> vibrate() async {
     if (message.notification != null) {
       // Handle notification payload when app is completely closed
       onNotificationClicked(message.data, true);
+      fetchData();
       vibrate();
     }
   }
@@ -320,10 +511,8 @@ Future<void> vibrate() async {
     controllerGoogleMap = mapController;
     googleMapCompleterController.complete(controllerGoogleMap);
     updateMapTheme(controllerGoogleMap!);
-    // timer = Timer.periodic(
-    //     const Duration(seconds: 20), (Timer t) => storeCurrentLocationOfUser());
-    // fetchData();
-  }
+ _getLocationDataOf1kmRadius();
+   }
 
   void updateMapTheme(GoogleMapController controller) {
     getJsonFileFromThemes("themes/night_style.json")
@@ -334,9 +523,10 @@ Future<void> vibrate() async {
     currentPageIndex = index;
     rebuildUi();
     if (index == 1) {
-      // storeCurrentLocationOfUser();
+ _getLocationDataOf1kmRadius();
       if (controllerGoogleMap != null) {
         updateMapTheme(controllerGoogleMap!);
+
       }
     }
   }
@@ -344,4 +534,12 @@ Future<void> vibrate() async {
   void goToProfileView() {
     _navigationService.navigateToAdminProfileView();
   }
+
+  void showNearestResponder() {
+      fetchData();
+    }
+    
+  void markNearestResponder() {
+      
+    }
 }

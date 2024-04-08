@@ -154,6 +154,31 @@ class AdminProfileView extends StackedView<AdminProfileViewModel> {
                         ),
                       ),
                     ),
+                    ElevatedButton(
+                      onPressed: viewModel.showUpdatePasswordDialog,
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(
+                            color: Colors.black,
+                            style: BorderStyle.solid,
+                            width: 2,
+                          ),
+                        ),
+                        backgroundColor: Colors.white,
+                        shadowColor: Colors.grey,
+                      ),
+                      child: const Text(
+                        "Create Admin Account",
+                        style: TextStyle(
+                          color: Colors.black,
+                          letterSpacing: 1,
+                          wordSpacing: 2,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     verticalSpaceSmall,
                     verticalSpaceMedium,
                     AppButton(

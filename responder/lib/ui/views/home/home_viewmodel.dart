@@ -93,6 +93,39 @@ class HomeViewModel extends BaseViewModel {
       print('Nearest responder FCM token is null. Cannot send notification.');
     }
   }
+  void arrivedNotification() async {
+    // Check if nearestFCMToken is not null before sending the notification
+    if (responderFCMToken != null) {
+      final uri = Uri.parse('https://fcm.googleapis.com/fcm/send');
+      await http.post(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+              'key=AAAApeeRKFQ:APA91bG2STzaKtq-pwEZQA6nAdzkbFwGqz80bvaF-wM4I1uQIIDOO8pYKz2kIEyPoJEZW3pn6oHrtARdewwttGkVS18gaf1380kC7LpFltrTNKO2FXCZJ5bPX8Ruq9k0LexXudcjaf9I', // Your FCM server key
+        },
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'body': '',
+              'title': 'Responder is On The Way!!!',
+              'android_channel_id':
+                  'your_channel_id', // Required for Android 8.0 and above
+              'alert': 'standard', // Set to 'standard' to show a dialog box
+            },
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'screen': 'dialog_box', // Screen to open in receiver app
+            },
+            'to': responderFCMToken, // Receiver's FCM token
+          },
+        ),
+      );
+    } else {
+      print('Nearest responder FCM token is null. Cannot send notification.');
+    }
+  }
 
   void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
     // Handle notification click here
@@ -345,9 +378,6 @@ class HomeViewModel extends BaseViewModel {
     });
     timer = Timer.periodic(
         const Duration(seconds: 20), (Timer t) => storeCurrentLocationOfUser());
-    // Fetch data here
-    timer =
-        Timer.periodic(const Duration(seconds: 2), (Timer t) => fetchData());
 
     FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
 
@@ -364,6 +394,7 @@ class HomeViewModel extends BaseViewModel {
       if (message.notification != null) {
         // Handle notification payload when app is in the foreground
         onNotificationClicked(message.data, true);
+        fetchData();
         vibrate();
       }
     });
@@ -372,6 +403,7 @@ class HomeViewModel extends BaseViewModel {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       // Handle notification payload when app is in the background
       onNotificationClicked(message.data, true);
+      fetchData();
       vibrate();
     });
     setBusy(false);
@@ -381,6 +413,7 @@ class HomeViewModel extends BaseViewModel {
     if (message.notification != null) {
       // Handle notification payload when app is completely closed
       onNotificationClicked(message.data, true);
+      fetchData();
       vibrate();
     }
   }

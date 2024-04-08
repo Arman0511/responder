@@ -68,6 +68,10 @@ void init() async {
       variant: DialogType.updatePassword,
     );
   }
+  
+  void showCreateAccount() async {
+    _navigationService.replaceWithAdminSignupView();
+  }
 
   Future<void> logOut() async {
     setBusy(true);

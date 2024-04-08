@@ -22,7 +22,11 @@ class AdminView extends StackedView<AdminViewModel> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return AppBody(
-        body: SizedBox(
+        body: viewModel.isBusy
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : SizedBox(
           height: MediaQuery.of(context).size.height, // or any fixed height you desire
           child: Column(
             children: [
@@ -110,19 +114,39 @@ class AdminView extends StackedView<AdminViewModel> {
                           ],
                         ),
                       ),
-                   SingleChildScrollView(
-                      child: Column(children: [
-                        Container(
-                          height: screenHeight * 0.3, // Set height to 30% of screen height
-                          child: GoogleMap(
-                            mapType: MapType.normal,
-                            myLocationEnabled: true,
-                            initialCameraPosition: googlePlexInitialPosition,
-                            onMapCreated: viewModel.mapCreated,
+                  SingleChildScrollView(
+                      child: Column(
+                        children: [
+                         Container(
+                                height: 400, // Set a specific height for the GoogleMap
+                                child: GoogleMap(
+                                  markers: viewModel.markers.values.toSet(),
+                                  mapType: MapType.normal,
+                                  myLocationEnabled: true,
+                                  initialCameraPosition: googlePlexInitialPosition,
+                                  onMapCreated: viewModel.mapCreated,
+                                ),
+                              ),
+                          SizedBox(height: 20), // Add some spacing between the map and the button
+                          ElevatedButton(
+                            onPressed:viewModel.showNearestResponder,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(double.infinity, 50), // Set width to match parent and height to 50
+                            ),
+                            child: Text('Show the nearest responder', style: TextStyle(fontSize: 18)), // You can adjust the font size as well
                           ),
-                        ),
-                      ]),
+                          SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed:viewModel.markNearestResponder,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(double.infinity, 50), // Set width to match parent and height to 50
+                            ),
+                            child: Text('Mark the nearest Responder', style: TextStyle(fontSize: 18)), // You can adjust the font size as well
+                          ),
+                        ],
+                      ),
                     ),
+
                   ],
                 ),
               ),

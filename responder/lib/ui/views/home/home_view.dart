@@ -145,9 +145,7 @@ class HomeView extends StackedView<HomeViewModel> {
                       width: double
                           .infinity, // Make the button take up the full width
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Action when the button is pressed
-                        },
+                        onPressed:viewmodel.arrivedNotification,
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
                           backgroundColor: Colors.blue, // Change the text color
