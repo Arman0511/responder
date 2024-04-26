@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -54,7 +55,9 @@ String? responderformattedDAndT;
   String? phoneNum;
   String? userFCMToken;
   String? userConcern;
+  String? userSituation;
   String? userImage;
+  String? userSituationPhoto;
   double? userLatitude;
   double? userLongitude;
   BuildContext? context;
@@ -72,7 +75,73 @@ String? responderformattedDAndT;
     QuerySnapshot<Object?> querySnapshot =
         await FirebaseFirestore.instance.collection('Emergency History').get();
     return querySnapshot;
+  } 
+  
+ Future<List<DocumentSnapshot<Map<String, dynamic>>>> fetchUsersCollection() async {
+  QuerySnapshot<Object?> querySnapshot = await FirebaseFirestore.instance.collection('users').get();
+  return querySnapshot.docs.cast<DocumentSnapshot<Map<String, dynamic>>>().toList();
+}
+
+Future<List<DocumentSnapshot<Map<String, dynamic>>>> fetchRespondersCollection() async {
+  QuerySnapshot<Object?> querySnapshot = await FirebaseFirestore.instance.collection('responder').get();
+  return querySnapshot.docs.cast<DocumentSnapshot<Map<String, dynamic>>>().toList();
+}
+
+Future<void> updateUserData(String documentId, Map<String, dynamic> updatedData) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('responder')
+          .doc(documentId)
+          .update(updatedData);
+      // Data updated successfully
+    } catch (e) {
+      // Handle error
+      print('Error updating user data: $e');
+      throw e; // Throw the error to be handled by the caller
+    }
   }
+  
+
+Future<void> deleteUserData(String documentId) async {
+  try {
+    // Get the user ID
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    
+    // Delete user's data from Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(documentId)
+        .delete();
+
+    // Delete user's authentication account
+    await FirebaseAuth.instance.currentUser?.delete();
+
+  } catch (e) {
+    print('Error deleting user data: $e');
+    throw 'Failed to delete user data.';
+  }
+  rebuildUi();
+}Future<void> deleteResponderData(String documentId) async {
+  try {
+    // Get the user ID
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    
+    // Delete user's data from Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(documentId)
+        .delete();
+
+    // Delete user's authentication account
+    await FirebaseAuth.instance.currentUser?.delete();
+
+  } catch (e) {
+    print('Error deleting user data: $e');
+    throw 'Failed to delete user data.';
+  }
+  rebuildUi();
+}
+
 
 
 Future<void> _getLocationDataOf1kmRadius() async {
@@ -174,7 +243,7 @@ Future<void> _getLocationDataOf1kmRadius() async {
   }
 }
 
- Future<String?> fetchResponderDetails() async{
+ Future<String?> fetchResponderDetails() async{ 
      try {
       // Get a reference to the "user" collection
       CollectionReference responderCollection =
@@ -228,12 +297,14 @@ Future<void> _getLocationDataOf1kmRadius() async {
       userName = docSnapshot.get('name');
       phoneNum = docSnapshot.get('phonenumber');
       userImage = docSnapshot.get('image');
+      userSituationPhoto = docSnapshot.get('situationPhoto');
       userFCMToken = docSnapshot.get('fcmToken');
       userLatitude = docSnapshot.get('latitude');
       userLongitude = docSnapshot.get('longitude');
+      userSituation = docSnapshot.get('situation');
 
       // Create a unique string identifier for the marker
-      String markerIdValue = 'user_$userNeededHelpUid';
+      String markerIdValue = 'users_$userNeededHelpUid';
       MarkerId markerId = MarkerId(markerIdValue);
       Marker marker = Marker(
         markerId: markerId,
@@ -262,7 +333,7 @@ Future<void> _getLocationDataOf1kmRadius() async {
 
       return userName;
     } else {
-      print('Document does not exist in the "user" collection.');
+      print('Document does not exist in the "users" collection.');
       return null;
     }
   } catch (e) {
@@ -302,7 +373,7 @@ Future<void> _getLocationDataOf1kmRadius() async {
       if (querySnapshot.docs.isNotEmpty) {
         // Access the first document and get the "userId" field
         userNeededHelpUid = querySnapshot.docs.first.get('userId');
-        print('User ID: $userNeededHelpUid');
+        print('User ID from Admin: $userNeededHelpUid');
       } 
        if (querySnapshotResponder.docs.isNotEmpty) {
         // Access the first document and get the "userId" field
@@ -316,8 +387,6 @@ Future<void> _getLocationDataOf1kmRadius() async {
     }
   }
 
- 
-  
 
   void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
     // Handle notification click here
@@ -325,84 +394,200 @@ Future<void> _getLocationDataOf1kmRadius() async {
       showDialogBox(context!);
     });
   }
+void onNotificationClickedResponder(Map<String, dynamic> data, bool isInForeground) {
+    // Handle notification click here
+    Future.delayed(const Duration(seconds: 2), () {
+      showDialogBoxResponder(context!);
+    });
+  }
 
   void showDialogBox(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("User Information"),
-          content: SingleChildScrollView(
-            // Wrap content with SingleChildScrollView
-            scrollDirection:
-                Axis.horizontal, // Set scroll direction to horizontal
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (responderuserImage != null) // Check if the image is fetched
-                  GestureDetector(
-                    onTap: () {
-                      // Show full-size image when tapped
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Image.network(
-                              responderuserImage!, // Use fetched image URL
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("User Information"),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical, // Change scroll direction to vertical
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start, // Align content to start
+            children: [
+              if (userImage != null) // Check if the image is fetched
+                GestureDetector(
+                  onTap: () {
+                    // Show full-size image when tapped
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Image.network(
+                            userImage!, // Use fetched image URL
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Close"),
                             ),
-                            actions: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text("Close"),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: Image.network(
-                      responderuserImage!, // Use fetched image URL
-                      width: 100, // Adjust width as needed
-                      height: 100, // Adjust height as needed
-                    ),
-                  ),
-                Text('Responder Name: $responderuserName'),
-                Text('Phone Number: $responderphoneNum'),
-                Text('Date: $responderformattedDateAndTime'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: 110,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      launchDialer(phoneNum!);
-                    },
-                    child: Text("Call"),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _openGoogleMaps(userLatitude, userLongitude);
-                    // sendNotification();
-                    // storeEmergencyHistory();
+                          ],
+                        );
+                      },
+                    );
                   },
-                  child: Text("Navigate"),
+                  child: Image.network(
+                    userImage!, // Use fetched image URL
+                    width: double.infinity, // Set width to fill available space
+                    height: 200, // Adjust height as needed
+                    fit: BoxFit.cover, // Ensure image covers the area
+                  ),
                 ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
+              Text('Patient Name: $userName'),
+              Text('User is in need of: $userConcern'),
+              Text('User Situation: $userSituation'),
+              if (userSituationPhoto != null) // Check if the photo exists
+                GestureDetector(
+                  onTap: () {
+                    // Show full-size photo when tapped
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Image.network(
+                            userSituationPhoto!, // Use fetched photo URL
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Close"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Image.network(
+                    userSituationPhoto!, // Use fetched photo URL
+                    width: double.infinity, // Set width to fill available space
+                    height: 200, // Adjust height as needed
+                    fit: BoxFit.cover, // Ensure image covers the area
+                  ),
+                ),
+              Text('Phone Number: $phoneNum'),
+              Text('Date: $formattedDateAndTime'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 110,
+                child: ElevatedButton(
+                  onPressed: () {
+                    launchDialer(phoneNum!);
+                  },
+                  child: Text("Call"),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _openGoogleMaps(userLatitude, userLongitude);
+                  // sendNotification();
+                  // storeEmergencyHistory();
+                },
+                child: Text("Navigate"),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+} 
+void showDialogBoxResponder(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("User Information"),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical, // Change scroll direction to vertical
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start, // Align content to start
+            children: [
+              if (responderuserImage != null) // Check if the image is fetched
+                GestureDetector(
+                  onTap: () {
+                    // Show full-size image when tapped
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Image.network(
+                            responderuserImage!, // Use fetched image URL
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Close"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Image.network(
+                    responderuserImage!, // Use fetched image URL
+                    width: double.infinity, // Set width to fill available space
+                    height: 200, // Adjust height as needed
+                    fit: BoxFit.cover, // Ensure image covers the area
+                  ),
+                ),
+              Text('Patient Name: $responderuserName'),
+              Text('Phone Number: $responderphoneNum'),
+              Text('Date: $responderformattedDateAndTime'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 110,
+                child: ElevatedButton(
+                  onPressed: () {
+                    launchDialer(phoneNum!);
+                  },
+                  child: Text("Call"),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _openGoogleMaps(responderuserLatitude, responderuserLongitude);
+                  // sendNotification();
+                  // storeEmergencyHistory();
+                },
+                child: Text("Navigate"),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   Future<void> _openGoogleMaps(userLatitude, userLongitude) async {
     String googleMapsUrl =
@@ -455,33 +640,59 @@ Future<void> vibrate() async {
 
     // Listen for incoming messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // Handle foreground messages
-      if (message.notification != null) {
-        // Handle notification payload when app is in the foreground
-        onNotificationClicked(message.data, true);
-        fetchData();
-        vibrate();
-      }
-    });
+  // Handle foreground messages
+  if (message.notification != null) {
+    // Check the notification title
+    String notificationTitle = message.notification!.title ?? "";
 
-    // Listen for notification clicks when app is in the background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      // Handle notification payload when app is in the background
+    // Execute corresponding functions based on the notification title
+    if (notificationTitle == "Someone is in distress") {
       onNotificationClicked(message.data, true);
-      fetchData();
-      vibrate();
-    });
+    } else if (notificationTitle == "Responder Arrived in the Destination") {
+      onNotificationClickedResponder(message.data, true);
+    }
+
+    // Fetch data and vibrate in both cases
+    fetchData();
+    vibrate();
+  }
+});
+    // Listen for notification clicks when app is in the background
+   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  // Check the notification title
+  String notificationTitle = message.notification!.title ?? "";
+
+  // Execute corresponding functions based on the notification title
+  if (notificationTitle == "Someone is in distress") {
+    onNotificationClicked(message.data, true);
+  } else if (notificationTitle == "Responder Arrived in the Destination") {
+    onNotificationClickedResponder(message.data, true);
+  }
+
+  // Fetch data and vibrate in both cases
+  fetchData();
+  vibrate();
+});
     setBusy(false);
   }
 
-  Future<void> _handleBackgroundMessage(RemoteMessage message) async {
-    if (message.notification != null) {
-      // Handle notification payload when app is completely closed
+ Future<void> _handleBackgroundMessage(RemoteMessage message) async {
+  if (message.notification != null) {
+    // Check the notification title
+    String notificationTitle = message.notification!.title ?? "";
+
+    // Execute corresponding functions based on the notification title
+    if (notificationTitle == "Someone is in distress") {
       onNotificationClicked(message.data, true);
-      fetchData();
-      vibrate();
+    } else if (notificationTitle == "Responder Arrived in the Destination") {
+      onNotificationClickedResponder(message.data, true);
     }
+
+    // Fetch data and vibrate in both cases
+    fetchData();
+    vibrate();
   }
+}
 
   Future<String> getJsonFileFromThemes(String mapStylePath) async {
     ByteData byteData = await rootBundle.load(mapStylePath);
@@ -522,7 +733,6 @@ Future<void> vibrate() async {
     currentPageIndex = index;
     rebuildUi();
     if (index == 1) {
- _getLocationDataOf1kmRadius();
       if (controllerGoogleMap != null) {
         updateMapTheme(controllerGoogleMap!);
 
@@ -534,11 +744,16 @@ Future<void> vibrate() async {
     _navigationService.navigateToAdminProfileView();
   }
 
-  void showNearestResponder() {
+  Future<void> showNearestResponder() async {
       fetchData();
+      showDialogBox(context!);
     }
     
   void markNearestResponder() {
       
     }
+
+  
+
+  
 }

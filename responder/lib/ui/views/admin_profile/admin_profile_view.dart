@@ -155,7 +155,7 @@ class AdminProfileView extends StackedView<AdminProfileViewModel> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: viewModel.showUpdatePasswordDialog,
+                      onPressed: viewModel.showCreateAccount,
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

@@ -27,6 +27,21 @@ class AuthenticationService {
       return Left(AppException(e.toString()));
     }
   }
+
+  Future<Either<AppException, None>> forgotPassword(
+      {required String email}) async {
+    final bool hasInternet = await _internetService.hasInternetConnection();
+    if (hasInternet) {
+      try {
+        await auth.sendPasswordResetEmail(email: email);
+        return const Right(None());
+      } on FirebaseAuthException catch (e) {
+        return Left(AppException(e.message.toString()));
+      }
+    } else {
+      return Left(AppException("Please check your internet connection!"));
+    }
+  }
   
    Future<Either<AppException, None>> logoutAdmin() async {
     try {

@@ -141,21 +141,19 @@ class HomeView extends StackedView<HomeViewModel> {
                   Tooltip(
                     message:
                         'Click this button if you arrived at the destination',
-                    child: Container(
-                      width: double
-                          .infinity, // Make the button take up the full width
+                   child: Container(
+                      width: double.infinity,
                       child: ElevatedButton(
-                        onPressed:viewModel.arrivedNotification,
+                        onPressed: () => viewModel.sendNotificationAdmin(context),
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          backgroundColor: Colors.blue, // Change the text color
-                          padding: EdgeInsets.symmetric(
-                              vertical:
-                                  16.0), // Increase the height of the button
+                          backgroundColor: Colors.blue,
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
                         ),
                         child: Text('Arrived'),
                       ),
                     ),
+
                   ),
                   SizedBox(
                     height:

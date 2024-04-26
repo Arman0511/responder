@@ -26,6 +26,8 @@ class HomeViewModel extends BaseViewModel {
   final _snackbarService = locator<SnackbarService>();
   final _sharedPref = locator<SharedPreferenceService>();
   FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
 
   StreamSubscription<User?>? streamSubscription;
 
@@ -55,6 +57,8 @@ class HomeViewModel extends BaseViewModel {
   String? responderFCMToken;
   String? userConcern;
   String? userImage;
+  String? userSituationPhoto;
+  String? userSituation;
 
   BuildContext? context;
 
@@ -93,11 +97,24 @@ class HomeViewModel extends BaseViewModel {
       print('Nearest responder FCM token is null. Cannot send notification.');
     }
   }
-  void arrivedNotification() async {
-    // Check if nearestFCMToken is not null before sending the notification
-    if (responderFCMToken != null) {
+  Future<void> sendNotificationAdmin(BuildContext context) async {
+  // Get a reference to the admin collection
+  CollectionReference adminCollection =
+      FirebaseFirestore.instance.collection('admin');
+
+  // Query for documents in the admin collection
+  QuerySnapshot adminSnapshot = await adminCollection.get();
+
+  // Iterate through each document in the collection
+  adminSnapshot.docs.forEach((adminDocument) async {
+    // Extract the 'fcmToken' field from the document data
+    var data = adminDocument.data() as Map<String, dynamic>;
+    if (data.containsKey('fcmToken')) {
+      String fcmToken = data['fcmToken'];
+
+      // Check if FCM token is not null before sending the notification
       final uri = Uri.parse('https://fcm.googleapis.com/fcm/send');
-      await http.post(
+      var response = await http.post(
         uri,
         headers: <String, String>{
           'Content-Type': 'application/json',
@@ -109,8 +126,7 @@ class HomeViewModel extends BaseViewModel {
             'notification': <String, dynamic>{
               'body': '',
               'title': 'Responder Arrived in the Destination',
-              'android_channel_id':
-                  'your_channel_id', // Required for Android 8.0 and above
+              'android_channel_id': 'your_channel_id', // Required for Android 8.0 and above
               'alert': 'standard', // Set to 'standard' to show a dialog box
             },
             'priority': 'high',
@@ -118,14 +134,36 @@ class HomeViewModel extends BaseViewModel {
               'click_action': 'FLUTTER_NOTIFICATION_CLICK',
               'screen': 'dialog_box', // Screen to open in receiver app
             },
-            'to': 'chbBHXMYRB6aroOJyJcF3l:APA91bHb9EfTwCFrHc9LQfzY5qv-B2FymgPrhdOheH4hjRAyZN2E3Yp5UJD4HDKYyyjbRN3l3tGOm2N__FFsq_y5Lo8H1i18xqN13fl6eWrkMTss4xyQQEIpo_PXzQ8sdu5nK15tMlPa', // Receiver's FCM token
+            'to': fcmToken, // Receiver's FCM token
           },
         ),
       );
-    } else {
-      print('Nearest responder FCM token is null. Cannot send notification.');
+
+      // Check if the notification is sent successfully
+      if (response.statusCode == 200) {
+        // Show a success dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Success'),
+              content: Text('Notification sent successfully!'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
-  }
+  });
+}
+
 
   void onNotificationClicked(Map<String, dynamic> data, bool isInForeground) {
     // Handle notification click here
@@ -213,11 +251,14 @@ class HomeViewModel extends BaseViewModel {
         'userName': userName,
         'phoneNum': phoneNum,
         'userImage': userImage,
+        'situation':userSituation,
+        'situationPhoto':userSituationPhoto,
         'responderFCMToken': responderFCMToken,
         'userLatitude': userLatitude,
         'userLongitude': userLongitude,
         'formattedDateAndTime': formattedDateAndTime,
         'userConcern': userConcern,
+        
         // Add any other fields you want to store in the emergency history
       });
 
@@ -244,9 +285,12 @@ class HomeViewModel extends BaseViewModel {
         userName = docSnapshot.get('name');
         phoneNum = docSnapshot.get('phonenumber');
         userImage = docSnapshot.get('image');
+        userSituationPhoto = docSnapshot.get('situationPhoto');
         responderFCMToken = docSnapshot.get('fcmToken');
         userLatitude = docSnapshot.get('latitude');
         userLongitude = docSnapshot.get('longitude');
+        userSituation = docSnapshot.get('situation');
+        
 
         // Handle the array field userConcern
         List<dynamic>? userConcernList = docSnapshot.get('concerns');
@@ -288,83 +332,114 @@ class HomeViewModel extends BaseViewModel {
   }
 
   void showDialogBox(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("User Information"),
-          content: SingleChildScrollView(
-            // Wrap content with SingleChildScrollView
-            scrollDirection:
-                Axis.horizontal, // Set scroll direction to horizontal
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (userImage != null) // Check if the image is fetched
-                  GestureDetector(
-                    onTap: () {
-                      // Show full-size image when tapped
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            content: Image.network(
-                              userImage!, // Use fetched image URL
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("User Information"),
+        content: SingleChildScrollView(
+          // Wrap content with SingleChildScrollView
+          scrollDirection:
+              Axis.horizontal, // Set scroll direction to horizontal
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (userImage != null) // Check if the image is fetched
+                GestureDetector(
+                  onTap: () {
+                    // Show full-size image when tapped
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Image.network(
+                            userImage!, // Use fetched image URL
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Close"),
                             ),
-                            actions: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: Text("Close"),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: Image.network(
-                      userImage!, // Use fetched image URL
-                      width: 100, // Adjust width as needed
-                      height: 100, // Adjust height as needed
-                    ),
-                  ),
-                Text('Patient Name: $userName'),
-                Text('User is need of: $userConcern'),
-                Text('Phone Number: $phoneNum'),
-                Text('Date: $formattedDateAndTime'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  width: 110,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      launchDialer(phoneNum!);
-                    },
-                    child: Text("Call"),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _openGoogleMaps(userLatitude, userLongitude);
-                    sendNotification();
-                    storeEmergencyHistory();
+                          ],
+                        );
+                      },
+                    );
                   },
-                  child: Text("Navigate"),
+                  child: Image.network(
+                    userImage!, // Use fetched image URL
+                    width: 100, // Adjust width as needed
+                    height: 100, // Adjust height as needed
+                  ),
                 ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
+              Text('Patient Name: $userName'),
+              Text('User is need of: $userConcern'),
+              Text('User Situation: $userSituation'),
+              if (userSituationPhoto != null) // Check if the photo exists
+                GestureDetector(
+                  onTap: () {
+                    // Show full-size photo when tapped
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          content: Image.network(
+                            userSituationPhoto!, // Use fetched photo URL
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text("Close"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Image.network(
+                    userSituationPhoto!, // Use fetched photo URL
+                    width: 100, // Adjust width as needed
+                    height: 100, // Adjust height as needed
+                  ),
+                ),
+              Text('Phone Number: $phoneNum'),
+              Text('Date: $formattedDateAndTime'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+                width: 110,
+                child: ElevatedButton(
+                  onPressed: () {
+                    launchDialer(phoneNum!);
+                  },
+                  child: Text("Call"),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _openGoogleMaps(userLatitude, userLongitude);
+                  sendNotification();
+                  storeEmergencyHistory();
+                },
+                child: Text("Navigate"),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   init() async {
     setBusy(true);
